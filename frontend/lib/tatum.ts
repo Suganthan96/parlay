@@ -98,13 +98,14 @@ export function suiToUsd(sui: number, suiPrice: number): string {
 // ── Prediction API (bookmaker odds for soccer) ────────────────────────────────
 
 export interface BookmakerOdds {
-  matchId:   string;
-  homeTeam:  string;
-  awayTeam:  string;
-  homeOdds:  number; // decimal odds e.g. 2.10
-  drawOdds?: number;
-  awayOdds:  number;
-  kickoff:   number; // unix timestamp (seconds)
+  matchId:      string;
+  homeTeam:     string;
+  awayTeam:     string;
+  homeOdds:     number; // decimal odds e.g. 2.10
+  drawOdds?:    number;
+  awayOdds:     number;
+  kickoff:      number; // unix timestamp (seconds)
+  suiObjectId?: string; // on-chain PredictionMarket object ID (testnet)
 }
 
 export async function getLiveFootballOdds(): Promise<BookmakerOdds[]> {
@@ -132,16 +133,34 @@ export async function getLiveFootballOdds(): Promise<BookmakerOdds[]> {
   }
 }
 
-// Fallback: realistic Premier League-style fixtures
+// Fallback: fixtures matching deployed on-chain PredictionMarket objects (testnet)
 function getMockFootballOdds(): BookmakerOdds[] {
   const base = Math.floor(Date.now() / 1000);
   return [
-    { matchId: 'man-city-liverpool',    homeTeam: 'Man City',  awayTeam: 'Liverpool',   homeOdds: 1.95, drawOdds: 3.50, awayOdds: 3.80, kickoff: base + 86400     },
-    { matchId: 'arsenal-chelsea',       homeTeam: 'Arsenal',   awayTeam: 'Chelsea',     homeOdds: 1.75, drawOdds: 3.80, awayOdds: 4.50, kickoff: base + 86400 * 2  },
-    { matchId: 'barca-real-madrid',     homeTeam: 'Barcelona', awayTeam: 'Real Madrid', homeOdds: 2.60, drawOdds: 3.20, awayOdds: 2.65, kickoff: base + 86400 * 3  },
-    { matchId: 'psg-man-united',        homeTeam: 'PSG',       awayTeam: 'Man Utd',     homeOdds: 1.60, drawOdds: 4.00, awayOdds: 5.50, kickoff: base + 86400 * 4  },
-    { matchId: 'juventus-inter-milan',  homeTeam: 'Juventus',  awayTeam: 'Inter Milan', homeOdds: 2.80, drawOdds: 3.10, awayOdds: 2.50, kickoff: base + 86400 * 5  },
-    { matchId: 'tottenham-newcastle',   homeTeam: 'Tottenham', awayTeam: 'Newcastle',   homeOdds: 2.10, drawOdds: 3.40, awayOdds: 3.30, kickoff: base + 86400 * 6  },
+    {
+      matchId: 'manchester-city-arsenal',
+      homeTeam: 'Manchester City', awayTeam: 'Arsenal',
+      homeOdds: 1.65, drawOdds: 3.90, awayOdds: 2.20,
+      kickoff: base + 86400,
+      suiObjectId: process.env.NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL ?? '',
+    },
+    {
+      matchId: 'real-madrid-liverpool',
+      homeTeam: 'Real Madrid', awayTeam: 'Liverpool',
+      homeOdds: 1.82, drawOdds: 3.60, awayOdds: 2.86,
+      kickoff: base + 86400 * 2,
+      suiObjectId: process.env.NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL ?? '',
+    },
+    {
+      matchId: 'psg-bayern',
+      homeTeam: 'PSG', awayTeam: 'Bayern Munich',
+      homeOdds: 2.08, drawOdds: 3.40, awayOdds: 2.38,
+      kickoff: base + 86400 * 3,
+      suiObjectId: process.env.NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN ?? '',
+    },
+    { matchId: 'arsenal-chelsea',      homeTeam: 'Arsenal',   awayTeam: 'Chelsea',     homeOdds: 1.75, drawOdds: 3.80, awayOdds: 4.50, kickoff: base + 86400 * 4 },
+    { matchId: 'barca-real-madrid',    homeTeam: 'Barcelona', awayTeam: 'Real Madrid', homeOdds: 2.60, drawOdds: 3.20, awayOdds: 2.65, kickoff: base + 86400 * 5 },
+    { matchId: 'tottenham-newcastle',  homeTeam: 'Tottenham', awayTeam: 'Newcastle',   homeOdds: 2.10, drawOdds: 3.40, awayOdds: 3.30, kickoff: base + 86400 * 6 },
   ];
 }
 

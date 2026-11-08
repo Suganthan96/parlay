@@ -21,6 +21,8 @@ export default function ParlayPage() {
   // Build on-chain args from legs that have marketObjectId/outcomeIdx
   const onChainMarkets  = legs.map(l => l.marketObjectId).filter(Boolean) as string[];
   const onChainOutcomes = legs.map(l => l.outcomeIdx ?? 1);
+  // WAD-scaled decimal odds: l.price is implied probability, decimal odds = 1/price
+  const onChainOddsWad  = legs.map(l => BigInt(Math.round((1 / l.price) * 1_000_000_000)));
   const hasOnChain      = onChainMarkets.length === legs.length && legs.length > 0;
 
   const { combinedPrice, payoutSui } = useQuoteParlay(legs, stake);
@@ -207,6 +209,7 @@ export default function ParlayPage() {
             <BuyParlayButton
               marketObjectIds={onChainMarkets}
               outcomeIdxs={onChainOutcomes}
+              oddsWad={onChainOddsWad}
               stakeSui={stake}
               hasOnChain={hasOnChain}
               minPayoutSui={minPayoutSui}

@@ -86,11 +86,13 @@ export function useQuoteParlay(
   if (!legs.length || stakeSui <= 0) {
     return { combinedPrice: 0, payoutSui: 0, payoutMist: 0n, isValid: false };
   }
-  const combined    = legs.reduce((acc, l) => acc * l.price, 1);
-  const withMargin  = combined * 1.1; // 10% house margin
-  const payout      = withMargin > 0 ? stakeSui / withMargin : 0;
+  // Combined decimal odds (product of all legs)
+  const combined = legs.reduce((acc, l) => acc * l.price, 1);
+  // Contract: margin_prob = combined_prob / 1.1, payout = stake * product(odds) * 1.1
+  // (MARGIN_DEN/MARGIN_NUM = 100/110 reduces implied probability → larger payout)
+  const payout = stakeSui * combined * (100 / 110);
   return {
-    combinedPrice: withMargin,
+    combinedPrice: combined,
     payoutSui:     payout,
     payoutMist:    suiToMist(payout),
     isValid:       payout > stakeSui,
@@ -101,6 +103,7 @@ export function useQuoteParlay(
 
 interface BuyParlayParams {
   marketObjectIds: string[];
+  oddsWad:         bigint[]; // WAD-scaled decimal odds (e.g. 2.0 → 2_000_000_000n)
   outcomes:        number[]; // 1=Home, 2=Away
   stakeSui:        number;
   minPayoutSui?:   number;
@@ -119,7 +122,7 @@ export function useBuyParlay() {
   const [errorMsg,     setErrorMsg]     = useState('');
 
   const buyParlay = useCallback(async (params: BuyParlayParams) => {
-    const { marketObjectIds, outcomes, stakeSui, minPayoutSui = 0, legs, network } = params;
+    const { marketObjectIds, oddsWad, outcomes, stakeSui, minPayoutSui = 0, legs, network } = params;
     if (!account?.address) { params.onError?.('Wallet not connected'); return; }
 
     setIsPending(true);
@@ -129,9 +132,9 @@ export function useBuyParlay() {
     try {
       const packageId  = getPackageId(network);
       const treasuryId = getTreasuryId(network);
-      if (!packageId || !treasuryId) throw new Error('Contract not deployed — run scripts/deploy.ts first');
+      if (!packageId || !treasuryId) throw new Error('Contract not deployed — run scripts/deploy.js first');
 
-      const stakeMist    = suiToMist(stakeSui);
+      const stakeMist     = suiToMist(stakeSui);
       const minPayoutMist = suiToMist(minPayoutSui);
 
       // 1. Store ticket metadata on Walrus
@@ -143,16 +146,19 @@ export function useBuyParlay() {
         purchasedAt:  new Date().toISOString(),
       });
 
-      // 2. Build PTB
+      // 2. Build PTB matching new router signature:
+      //    buy_parlay(market_ids: vector<address>, odds_wad: vector<u64>,
+      //               outcomes: vector<u8>, stake: Coin<SUI>,
+      //               min_payout_mist: u64, treasury: &mut Treasury,
+      //               blob_id: vector<u8>, clock: &Clock)
       const tx = new Transaction();
       const [stakeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(stakeMist)]);
-
-      const marketArgs = marketObjectIds.map(id => tx.object(id));
 
       tx.moveCall({
         target:    `${packageId}::parlay_router::buy_parlay`,
         arguments: [
-          tx.makeMoveVec({ elements: marketArgs, type: `${packageId}::prediction_market::PredictionMarket` }),
+          tx.pure.vector('address', marketObjectIds),
+          tx.pure.vector('u64', oddsWad.map(Number)),
           tx.pure.vector('u8', outcomes),
           stakeCoin,
           tx.pure.u64(minPayoutMist),
@@ -228,7 +234,6 @@ export function useCashOut() {
 
   const cashOut = useCallback(async (
     ticketObjectId: string,
-    marketObjectIds: string[],
     network: Network,
   ) => {
     if (!account?.address) return;
@@ -237,11 +242,10 @@ export function useCashOut() {
       const packageId  = getPackageId(network);
       const treasuryId = getTreasuryId(network);
       const tx = new Transaction();
-      const marketArgs = marketObjectIds.map(id => tx.object(id));
+      // cash_out_ticket(ticket: Ticket, treasury: &mut Treasury)
       tx.moveCall({
         target:    `${packageId}::parlay_router::cash_out_ticket`,
         arguments: [
-          tx.makeMoveVec({ elements: marketArgs, type: `${packageId}::prediction_market::PredictionMarket` }),
           tx.object(ticketObjectId),
           tx.object(treasuryId),
         ],

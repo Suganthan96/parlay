@@ -34,6 +34,18 @@ export function getAdminCapId(network: Network = 'testnet'): string {
 export const CLOCK_OBJECT_ID = '0x6';
 export const SUI_COIN_TYPE   = '0x2::sui::SUI';
 
+// On-chain PredictionMarket object IDs keyed by matchId (testnet)
+export const TESTNET_MARKET_IDS: Record<string, string> = {
+  'manchester-city-arsenal':    envOrEmpty('NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL'),
+  'real-madrid-liverpool':      envOrEmpty('NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL'),
+  'psg-bayern':                 envOrEmpty('NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN'),
+};
+
+export function getMarketObjectId(matchId: string, network: Network = 'testnet'): string {
+  if (network !== 'testnet') return '';
+  return TESTNET_MARKET_IDS[matchId] ?? '';
+}
+
 // WAD denominator — matches Move contracts
 export const WAD = 1_000_000_000n;
 export const MIST_PER_SUI = 1_000_000_000n;

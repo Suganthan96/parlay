@@ -10,6 +10,7 @@ import { txUrl } from '@/lib/sui-client';
 interface Props {
   marketObjectIds:  string[];
   outcomeIdxs:      number[];  // 1=Home, 2=Away
+  oddsWad:          bigint[];  // WAD-scaled decimal odds per leg
   stakeSui:         number;
   hasOnChain:       boolean;
   minPayoutSui?:    number;
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export default function BuyParlayButton({
-  marketObjectIds, outcomeIdxs, stakeSui, hasOnChain,
+  marketObjectIds, outcomeIdxs, oddsWad, stakeSui, hasOnChain,
   minPayoutSui = 0,
   stakeLabel, network,
   legsMeta = [],
@@ -45,6 +46,7 @@ export default function BuyParlayButton({
 
     await buyParlay({
       marketObjectIds,
+      oddsWad,
       outcomes:    outcomeIdxs,
       stakeSui,
       minPayoutSui,

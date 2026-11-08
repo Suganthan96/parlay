@@ -113,7 +113,7 @@ function FootballCard({ match, suiPrice }: { match: BookmakerOdds; suiPrice: num
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <button
-            onClick={() => addLeg({ marketId: `${match.matchId}-home`, marketLabel: `${match.homeTeam} vs ${match.awayTeam}`, outcome: `${match.homeTeam} Win`, price: homeProb, marketObjectId: match.matchId, outcomeIdx: 1 })}
+            onClick={() => addLeg({ marketId: `${match.matchId}-home`, marketLabel: `${match.homeTeam} vs ${match.awayTeam}`, outcome: `${match.homeTeam} Win`, price: homeProb, marketObjectId: match.suiObjectId || undefined, outcomeIdx: 1 })}
             disabled={inHome}
             style={{ padding: '14px 8px', background: inHome ? '#00dc8215' : '#00dc82', color: inHome ? '#00dc82' : '#000', border: inHome ? '1px solid #00dc8244' : 'none', cursor: inHome ? 'default' : 'pointer', fontWeight: 900, fontSize: 12, textAlign: 'center' }}
           >
@@ -121,7 +121,7 @@ function FootballCard({ match, suiPrice }: { match: BookmakerOdds; suiPrice: num
             <div style={{ fontSize: 10, opacity: 0.8 }}>{inHome ? '✓ IN PARLAY' : match.homeTeam.split(' ').pop()?.toUpperCase()}</div>
           </button>
           <button
-            onClick={() => addLeg({ marketId: `${match.matchId}-away`, marketLabel: `${match.homeTeam} vs ${match.awayTeam}`, outcome: `${match.awayTeam} Win`, price: awayProb, marketObjectId: match.matchId, outcomeIdx: 2 })}
+            onClick={() => addLeg({ marketId: `${match.matchId}-away`, marketLabel: `${match.homeTeam} vs ${match.awayTeam}`, outcome: `${match.awayTeam} Win`, price: awayProb, marketObjectId: match.suiObjectId || undefined, outcomeIdx: 2 })}
             disabled={inAway}
             style={{ padding: '14px 8px', background: 'transparent', color: inAway ? '#555' : 'var(--black)', border: `1px solid ${inAway ? '#1a1a1a' : 'var(--border)'}`, cursor: inAway ? 'default' : 'pointer', fontWeight: 900, fontSize: 12, textAlign: 'center' }}
           >

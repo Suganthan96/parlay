@@ -112,7 +112,7 @@ function TicketCard({ ticket, network }: {
           <div style={{ padding: '14px 20px', borderTop: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'center' }}>
             {isOpen && !cashedOut && (
               <button
-                onClick={e => { e.stopPropagation(); cashOut(ticket.objectId, [], network); }}
+                onClick={e => { e.stopPropagation(); cashOut(ticket.objectId, network); }}
                 disabled={cashingOut}
                 style={{ flex: 1, padding: '13px', background: 'var(--black)', color: 'var(--white)', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase' }}
               >
