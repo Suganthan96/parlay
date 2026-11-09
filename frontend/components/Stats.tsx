@@ -3,13 +3,13 @@ export default function Stats() {
     <section id="about">
       {/* Row 1 */}
       <div className="page-grid" style={{ borderTop: "1px solid var(--border)", borderBottom: "none" }}>
-        {/* 3 — protocols */}
+        {/* 2 — services */}
         <div
           className="gc-1-2 flex flex-col justify-between cell-pad"
           style={{ background: "var(--white)", minHeight: "clamp(140px, 20vh, 260px)" }}
         >
           <span className="text-stat">2</span>
-          <span className="text-label opacity-70 mt-4">Protocols — 1inch Aqua · Chainlink CRE</span>
+          <span className="text-label opacity-70 mt-4">Services — Tatum RPC · Walrus Memory</span>
         </div>
         {/* 5 — max legs */}
         <div
@@ -41,13 +41,13 @@ export default function Stats() {
           <span className="text-stat" style={{ color: "var(--black)" }}>100%</span>
           <span className="text-label opacity-70 mt-4">Odds always sum to 100% — LMSR</span>
         </div>
-        {/* DON — consensus nodes */}
+        {/* 10+ — Walrus memories */}
         <div
           className="gc-3 flex flex-col justify-between cell-pad"
           style={{ background: "var(--black)", minHeight: "clamp(160px, 22vh, 280px)" }}
         >
-          <span className="text-stat text-white">DON</span>
-          <span className="text-label text-white opacity-70 mt-4">Chainlink node consensus — no single oracle</span>
+          <span className="text-stat text-white">10+</span>
+          <span className="text-label text-white opacity-70 mt-4">Walrus memories stored — market credibility grows</span>
         </div>
         {/* 0 — custodians */}
         <div
@@ -56,7 +56,7 @@ export default function Stats() {
         >
           <span className="text-stat" style={{ color: "var(--black)" }}>0</span>
           <span className="text-label opacity-70 mt-4">
-            Custodians — LP stays in your wallet
+            Custodians — funds live on-chain only
           </span>
         </div>
       </div>

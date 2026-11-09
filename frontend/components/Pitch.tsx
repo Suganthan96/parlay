@@ -1,3 +1,6 @@
+import TatumLogo from "./TatumLogo";
+import WalrusLogo from "./WalrusLogo";
+
 const problemStats = [
   { n: "$83B",  label: "Global sports betting market",        bg: "var(--black)",      color: "white"           },
   { n: "40%",   label: "Sportsbook revenue from parlays",     bg: "var(--light-gray)", color: "var(--black)"    },
@@ -7,36 +10,36 @@ const problemStats = [
 
 const sponsors = [
   {
-    name: "1inch Aqua",
-    color: "#1dc3fa",
-    role: "Virtual Liquidity Layer",
-    what: "LP approves Aqua once. USDC stays in wallet. Aqua only calls transferFrom(LP → Vault) when a user wins. Zero capital lockup. Zero counterparty risk.",
-    code: "Aqua.ship(Router, strategy, [USDC], [$1945])\nAqua.pull(LP, stratHash, USDC, $4.00)",
+    name: "Tatum RPC",
+    color: "#6366f1",
+    role: "Live On-Chain Data",
+    what: "All Sui chain reads route through Tatum's mainnet gRPC endpoint. Ticket objects, treasury balance, owned NFTs, live SUI price — Tatum powers every on-chain data call in the dApp. Zero self-hosting required.",
+    code: "// SuiGrpcClient via Tatum mainnet\nawait client.listOwnedObjects(address)\nawait client.getObject(treasuryId)\nawait client.getLatestCheckpointSequenceNumber()",
     bg: "var(--black)",
   },
   {
-    name: "Chainlink CRE",
-    color: "#375bd2",
-    role: "Automated Oracle Settlement",
-    what: "Custom Runtime Environment watches for SettlementRequested events. Fetches final outcome from Polymarket API off-chain. Calls MarketResolver.resolve() on-chain. Fully automated — zero manual intervention.",
-    code: "emit SettlementRequested(matchId, marketAddr)\nCRE → MarketResolver.resolve(matchId, Outcome)",
+    name: "Walrus Memory",
+    color: "#10b981",
+    role: "Persistent Intelligence Layer",
+    what: "MemWal SDK remembers every bet. When a market resolves, the result + credibility score is stored as a Walrus memory. recall() surfaces the most accurate markets for future parlays. 10+ memories on-chain.",
+    code: "// MemWal SDK\nawait memwal.remember({ market, outcome, score })\nconst memories = await memwal.recall({ query })\n// credibility grows with every result",
     bg: "var(--white)",
   },
   {
-    name: "Polymarket",
-    color: "#00dc82",
-    role: "Real-World Market Data Feed",
-    what: "30+ live binary questions fetched from gamma-api.polymarket.com. Politics, crypto, sports, geopolitics. Each question maps to an LMSR contract on-chain. Real events, fully on-chain settlement.",
-    code: "GET /markets?active=true&closed=false\n{ question, outcomePrices: ['0.72','0.28'] }",
+    name: "Walrus Blobs",
+    color: "#f59e0b",
+    role: "NFT Metadata Store",
+    what: "Every ticket NFT's metadata is stored on Walrus Blob storage — legs, stake, payout, timestamp. The blobId is anchored on-chain in the ticket object. Fully decentralised, verifiable, permanent.",
+    code: "// storeTicketMeta → Walrus testnet publisher\nPOST /v1/blobs { legs, stake, txHash }\n{ blobId } → stored in Ticket.blob_id\nGET /v1/blobs/{blobId} → recover metadata",
     bg: "var(--mint)",
   },
 ];
 
 const contracts = [
-  { name: "AquaParlayRouter", addr: "0x3617455115c85ab2bdb67c2dc8720d1d8afc0f76" },
-  { name: "ParlayVault",      addr: "0x8d98ff91515b47f8a2b89d00cb597497dc47fbe0" },
-  { name: "MarketResolver",   addr: "0x5d5cc1cd24943ecf43ad5e88281393418ca06bea" },
-  { name: "LmsrMarket ×2",    addr: "0xdcd65f…7911d  ·  0x76048d…84aa" },
+  { name: "ParlayVault",   addr: "0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d" },
+  { name: "Treasury",      addr: "0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684" },
+  { name: "Market: MCvARS",addr: "0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a" },
+  { name: "Market: RMvLFC",addr: "0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f" },
 ];
 
 export default function Pitch() {
@@ -97,8 +100,8 @@ export default function Pitch() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
                 ["Single outcome only",   "1.4× max payout on any Polymarket bet."],
-                ["Order books fail retail","No counterparty = no trade. Illiquid = no price."],
-                ["Capital locked",        "AMM LPs must deposit 100% upfront. High risk, low efficiency."],
+                ["No chain memory",       "Past market accuracy is never recorded or used."],
+                ["Capital locked",        "AMM LPs must deposit 100% upfront. High risk."],
                 ["15–30% house edge",     "Traditional parlays are opaque. Users pay huge fees."],
               ].map(([title, desc]) => (
                 <div key={title}>
@@ -186,7 +189,7 @@ export default function Pitch() {
         </div>
       </section>
 
-      {/* ══ SPONSOR TECH ══ */}
+      {/* ══ TECH INTEGRATIONS ══ */}
       <section id="sponsors">
         <div className="page-grid" style={{ borderTop: "1px solid var(--border)", borderBottom: "none" }}>
           <div
@@ -197,12 +200,12 @@ export default function Pitch() {
             className="gc-3-4 flex flex-col justify-end cell-pad-lg"
             style={{ background: "var(--black)", minHeight: "clamp(200px, 28vh, 360px)" }}
           >
-            <p className="text-label" style={{ color: "#555", marginBottom: 12 }}>■ Sponsor Integrations</p>
+            <p className="text-label" style={{ color: "#555", marginBottom: 12 }}>■ Hackathon Integrations</p>
             <h2 className="text-display text-white">Stack</h2>
           </div>
         </div>
 
-        {/* Sponsor cards — 2×2 */}
+        {/* Integration cards — 3 cards */}
         <div className="page-grid" style={{ borderTop: "1px solid var(--border)" }}>
           {sponsors.map((s, i) => (
             <div
@@ -217,17 +220,28 @@ export default function Pitch() {
             >
               <div>
                 <p className="text-label mb-3" style={{ opacity: 0.5 }}>{s.role}</p>
-                <h3
-                  style={{
-                    fontSize: "clamp(22px, 3vw, 44px)",
-                    fontWeight: 800,
-                    letterSpacing: "-0.025em",
-                    lineHeight: 1.1,
-                    color: s.color,
-                  }}
-                >
-                  {s.name}
-                </h3>
+                {s.name === "Tatum RPC" && (
+                  <TatumLogo variant="light" height={36} />
+                )}
+                {s.name === "Walrus Memory" && (
+                  <WalrusLogo color="#111111" height={28} />
+                )}
+                {s.name === "Walrus Blobs" && (
+                  <WalrusLogo color="#111111" height={28} />
+                )}
+                {!["Tatum RPC", "Walrus Memory", "Walrus Blobs"].includes(s.name) && (
+                  <h3
+                    style={{
+                      fontSize: "clamp(22px, 3vw, 44px)",
+                      fontWeight: 800,
+                      letterSpacing: "-0.025em",
+                      lineHeight: 1.1,
+                      color: s.color,
+                    }}
+                  >
+                    {s.name}
+                  </h3>
+                )}
                 <p
                   className="text-body mt-5"
                   style={{
@@ -266,7 +280,7 @@ export default function Pitch() {
             className="gc-1-2 flex flex-col justify-end cell-pad-lg"
             style={{ background: "var(--black)", minHeight: "clamp(200px, 28vh, 360px)" }}
           >
-            <p className="text-label" style={{ color: "#555", marginBottom: 12 }}>■ Sepolia Testnet · Chain ID 11155111</p>
+            <p className="text-label" style={{ color: "#555", marginBottom: 12 }}>■ Sui Mainnet · Chain ID sui:mainnet</p>
             <h2 className="text-display text-white">Live.</h2>
           </div>
           <div
@@ -282,14 +296,14 @@ export default function Pitch() {
             className="gc-1-2 flex flex-col justify-between cell-pad"
             style={{ background: "var(--black)", minHeight: "clamp(220px, 30vh, 400px)" }}
           >
-            <p className="text-label" style={{ color: "#555", marginBottom: 16 }}>■ Deployed Contracts</p>
+            <p className="text-label" style={{ color: "#555", marginBottom: 16 }}>■ Deployed Contracts — Sui Mainnet</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
               {contracts.map((c, i) => (
                 <div
                   key={c.name}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "160px 1fr",
+                    gridTemplateColumns: "140px 1fr",
                     gap: 12,
                     padding: "12px 0",
                     borderTop: i > 0 ? "1px solid #1a1a1a" : "none",
@@ -299,7 +313,7 @@ export default function Pitch() {
                   <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#555" }}>
                     {c.name}
                   </span>
-                  <span style={{ fontFamily: "monospace", fontSize: 10, color: "white" }}>{c.addr}</span>
+                  <span style={{ fontFamily: "monospace", fontSize: 9, color: "white", wordBreak: "break-all" }}>{c.addr}</span>
                 </div>
               ))}
             </div>
@@ -313,12 +327,12 @@ export default function Pitch() {
             <p className="text-label" style={{ marginBottom: 8, opacity: 0.5 }}>■ Traction</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {[
-                ["5+",     "Parlay tickets minted on-chain"],
-                ["$1945",  "USDC approved to Aqua (LP active)"],
-                ["30+",    "Real Polymarket questions in UI"],
+                ["10+",    "Parlay tickets minted on Sui Mainnet"],
+                ["10+",    "Walrus Memory entries stored"],
+                ["3 SUI",  "Treasury funded, live payouts"],
                 ["4×",     "Payout on 2-leg 50/50 parlay"],
               ].map(([n, l]) => (
-                <div key={n}>
+                <div key={n + l}>
                   <div style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1, color: "var(--black)" }}>
                     {n}
                   </div>
@@ -328,7 +342,7 @@ export default function Pitch() {
             </div>
           </div>
 
-          {/* ETHGlobal badge */}
+          {/* Hackathon submission badge */}
           <div
             className="gc-4 flex flex-col justify-between cell-pad"
             style={{ background: "var(--white)", minHeight: "clamp(220px, 30vh, 400px)" }}
@@ -344,13 +358,13 @@ export default function Pitch() {
                   color: "var(--black)",
                 }}
               >
-                ETHGlobal<br />2026
+                Tatum<br />× Walrus
               </p>
-              <p className="text-body mt-6" style={{ opacity: 0.6, maxWidth: 240 }}>
-                Built in 36 hours. Fully on-chain. 4 sponsor integrations. Contracts live on Sepolia.
+              <p className="text-body mt-4" style={{ opacity: 0.6, maxWidth: 240 }}>
+                Total Recall Hackathon · Track 1 · Markets & Sports Prediction. Live on Sui Mainnet. 10+ Walrus memories.
               </p>
               <div style={{ marginTop: 20, display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {["Next.js 14", "wagmi v2", "Foundry", "Solidity", "viem"].map((t) => (
+                {["Next.js 14", "Sui Move", "Tatum RPC", "Walrus Memory", "Walrus Blobs", "Polymarket"].map((t) => (
                   <span
                     key={t}
                     style={{

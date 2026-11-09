@@ -61,7 +61,7 @@ export default function CTA() {
         </div>
       </div>
 
-      {/* ETHGlobal row */}
+      {/* Tatum × Walrus row */}
       <div
         className="page-grid"
         style={{ borderTop: "1px solid var(--border)" }}

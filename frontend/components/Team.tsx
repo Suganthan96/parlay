@@ -1,20 +1,23 @@
+import TatumLogo from "./TatumLogo";
+import WalrusLogo from "./WalrusLogo";
+
 const stack = [
   {
-    name: "1inch Aqua",
-    role: "Liquidity & Pricing Infrastructure",
-    bio: "Non-custodial liquidity pools where the LP's USDC never leaves their wallet. The SwapVM engine executes ParlayPrice instructions that read live LMSR balances from each match strategy to price every leg.",
+    name: "Tatum RPC",
+    role: "Live On-Chain Data Layer",
+    bio: "Every Sui chain read goes through Tatum — ticket lookups, treasury balance, SUI price, owned objects. Tatum's mainnet gRPC endpoint powers the BCS-decoded ticket list and the live market state shown in the UI.",
     bg: "var(--white)",
   },
   {
-    name: "Chainlink CRE",
-    role: "Automated Result Oracle",
-    bio: "Chainlink Automation monitors match results and pushes verified outcomes on-chain the moment a game ends. Cryptographically tamper-proof. Zero manual intervention from the protocol team.",
+    name: "Walrus Memory",
+    role: "Persistent Intelligence Layer",
+    bio: "MemWal SDK stores every bet resolution as a memory: market name, outcome, and credibility score. As more games resolve, recall() surfaces the most accurate markets. The app learns from history.",
     bg: "var(--mint)",
   },
   {
-    name: "SwapVM",
-    role: "Parlay Pricing Engine",
-    bio: "The ParlayPrice instruction multiplies LMSR outcome probabilities across all selected legs: p_i = e^(q_i/b) / Σ e^(q_j/b). The product of all leg prices plus a 10% margin gives the final ticket price.",
+    name: "Sui Move",
+    role: "Smart Contract Settlement",
+    bio: "ParlayVault mints an NFT ticket in a single transaction. The LMSR pricing formula runs on-chain. When a market resolves, winners claim payouts directly from the vault — no intermediary, no server.",
     bg: "var(--black)",
   },
 ];
@@ -36,7 +39,7 @@ export default function Team() {
         />
       </div>
 
-      {/* Protocol stack grid — same 2×2 layout */}
+      {/* Protocol stack grid */}
       <div className="page-grid" style={{ borderTop: "1px solid var(--border)" }}>
         {stack.map((item, i) => (
           <div
@@ -56,16 +59,24 @@ export default function Team() {
               >
                 {item.role}
               </p>
-              <h3
-                style={{
-                  fontSize: "clamp(22px, 3vw, 44px)",
-                  fontWeight: 800,
-                  letterSpacing: "-0.025em",
-                  lineHeight: 1.1,
-                }}
-              >
-                {item.name}
-              </h3>
+              {item.name === "Tatum RPC" && (
+                <TatumLogo variant="dark" height={36} />
+              )}
+              {item.name === "Walrus Memory" && (
+                <WalrusLogo color="var(--black)" height={28} />
+              )}
+              {item.name !== "Tatum RPC" && item.name !== "Walrus Memory" && (
+                <h3
+                  style={{
+                    fontSize: "clamp(22px, 3vw, 44px)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.025em",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {item.name}
+                </h3>
+              )}
             </div>
             <p
               className="text-body mt-6"

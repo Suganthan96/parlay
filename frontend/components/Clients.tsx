@@ -1,9 +1,12 @@
-const sponsors = [
-  { name: "1inch Aqua",     category: "Liquidity Layer"       },
-  { name: "SwapVM",         category: "Pricing Execution"     },
-  { name: "Chainlink CRE",  category: "Result Oracle"         },
-  { name: "ParlayRouter",   category: "Smart Contract"        },
-  { name: "ParlayVault",    category: "Settlement"            },
+import TatumLogo from "./TatumLogo";
+import WalrusLogo from "./WalrusLogo";
+
+const stack = [
+  { name: "Tatum RPC",       category: "Live Chain Data"         },
+  { name: "Walrus Memory",   category: "Persistent Intelligence" },
+  { name: "Walrus Blobs",    category: "NFT Metadata Store"      },
+  { name: "Sui Move",        category: "Smart Contracts"         },
+  { name: "Polymarket API",  category: "Market Data Feed"        },
 ];
 
 export default function Clients() {
@@ -18,12 +21,17 @@ export default function Clients() {
           <h2 className="text-display text-charcoal">Built On</h2>
         </div>
         <div
-          className="gc-3-4 halftone"
+          className="gc-3-4 halftone flex flex-col justify-end cell-pad-lg"
           style={{ minHeight: "clamp(280px, 38vh, 500px)" }}
-        />
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <TatumLogo variant="dark" height={30} />
+            <WalrusLogo color="#111111" height={24} />
+          </div>
+        </div>
       </div>
 
-      {/* Row B: description + sponsor list */}
+      {/* Row B: description + stack list */}
       <div className="page-grid" style={{ borderTop: "1px solid var(--border)" }}>
         {/* label + description */}
         <div
@@ -31,28 +39,29 @@ export default function Clients() {
           style={{ minHeight: "clamp(220px, 28vh, 400px)" }}
         >
           <div>
-            <p className="text-label mb-6">Two open protocols, composable on-chain</p>
+            <p className="text-label mb-6">Tatum × Walrus · Total Recall Hackathon · Track 1</p>
             <p className="text-body" style={{ maxWidth: 440 }}>
               Parlay Markets is a thin coordination layer on top of infrastructure
-              that already exists. 1inch Aqua holds the liquidity and prices every
-              outcome via LMSR. Chainlink CRE pushes verified results on-chain the
-              moment a game ends. No database, no server.
+              that already exists. Tatum RPC powers every on-chain read — ticket
+              state, treasury balance, live SUI price. Walrus Memory learns from
+              every bet: market credibility scores update with each resolved outcome.
+              No database, no server, no custodian.
             </p>
           </div>
         </div>
 
-        {/* Sponsor list — same layout as original client list */}
+        {/* Stack list */}
         <div
           className="gc-3-4 bg-white"
           style={{ minHeight: "clamp(220px, 28vh, 400px)" }}
         >
-          {sponsors.map((s, i) => (
+          {stack.map((s, i) => (
             <div
               key={s.name}
               className="flex items-center justify-between px-6 py-5"
               style={{
                 borderBottom:
-                  i < sponsors.length - 1 ? "1px solid var(--border)" : "none",
+                  i < stack.length - 1 ? "1px solid var(--border)" : "none",
               }}
             >
               <span

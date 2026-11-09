@@ -33,8 +33,8 @@ function LiveClock() {
 }
 
 function NetworkToggle() {
-  const ctx     = useSuiClientContext();
-  const network = ctx.network as Network;
+  const ctx       = useSuiClientContext();
+  const network   = ctx.network as Network;
   const isTestnet = network === 'testnet';
 
   return (

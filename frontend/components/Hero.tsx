@@ -1,3 +1,6 @@
+import TatumLogo from "./TatumLogo";
+import WalrusLogo from "./WalrusLogo";
+
 export default function Hero() {
   return (
     <section>
@@ -7,6 +10,9 @@ export default function Hero() {
           className="gc-1-2 bg-white flex flex-col justify-end cell-pad-lg"
           style={{ minHeight: "clamp(320px, 42vh, 580px)" }}
         >
+          <p style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.12em", color: "#aaa", marginBottom: 14 }}>
+            // TATUM × WALRUS · TOTAL RECALL HACKATHON · NOV 2026
+          </p>
           <h1 className="text-display text-charcoal">Parlay</h1>
         </div>
         <div
@@ -15,28 +21,17 @@ export default function Hero() {
         />
       </div>
 
-      {/* ── ROW B: halftone | description | mint ─────── */}
+      {/* ── ROW B: built on | description | mint ─────── */}
       <div className="page-grid" style={{ borderTop: "1px solid var(--border)", borderBottom: "none" }}>
         <div
           className="gc-1-2 halftone flex flex-col justify-end cell-pad-lg"
           style={{ minHeight: "clamp(260px, 36vh, 480px)" }}
         >
           <div>
-            <p style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.12em", color: "#888", marginBottom: 16 }}>// BUILT ON</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <svg viewBox="0 0 52 64" style={{ height: 52 }} fill="#111" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="8,26 24,6 36,6 36,58 24,58 24,26"/>
-                  <rect x="8" y="50" width="36" height="8"/>
-                </svg>
-                <span style={{ fontSize: 16, fontWeight: 700, color: "#111", letterSpacing: "-0.01em" }}>1inch</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <svg viewBox="0 0 64 64" style={{ height: 52 }} xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" fill="#111" d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z M32 16 L46 24 L46 40 L32 48 L18 40 L18 24 Z"/>
-                </svg>
-                <span style={{ fontSize: 16, fontWeight: 700, color: "#111", letterSpacing: "-0.01em" }}>Chainlink</span>
-              </div>
+            <p style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.12em", color: "#888", marginBottom: 16 }}>// POWERED BY</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+              <TatumLogo variant="dark" height={36} />
+              <WalrusLogo color="#111111" height={28} />
             </div>
           </div>
         </div>
@@ -47,9 +42,9 @@ export default function Hero() {
           style={{ background: "var(--black)", minHeight: "clamp(260px, 36vh, 480px)" }}
         >
           <p className="text-body text-white leading-relaxed">
-            The first on-chain parlay. Pick up to 5 live outcomes across sports,
-            politics, and crypto — buy one ticket, win big. Chainlink CRE settles
-            results trustlessly. LP capital never leaves your wallet.
+            The first on-chain parlay on Sui Mainnet. Pick up to 5 live prediction
+            market outcomes — sports, politics, crypto — buy one NFT ticket,
+            win big. Tatum RPC reads the chain. Walrus Memory learns from every bet.
           </p>
           <a href="#how-it-works" className="arrow-btn mt-8">
             <span className="tracking-widest uppercase text-xs font-semibold">
@@ -70,27 +65,15 @@ export default function Hero() {
           style={{ background: "var(--mint)", minHeight: "clamp(260px, 36vh, 480px)" }}
         >
           <p className="text-body text-charcoal leading-relaxed">
-            Prices are powered by LMSR — a constant-sum market maker where every
-            outcome&apos;s probability sums to exactly 100%, always.
+            Walrus Memory stores every bet, outcome, and credibility score.
+            The app gets smarter with each market that resolves — surfacing the
+            most reliable predictions over time.
           </p>
           <div>
             <p className="text-label text-charcoal mb-5">Powered by:</p>
-            <div className="flex flex-wrap gap-x-8 gap-y-4">
-              {/* 1inch */}
-              <div className="flex items-center gap-2">
-                <svg viewBox="0 0 52 64" style={{ height: 28 }} fill="#111" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="8,26 24,6 36,6 36,58 24,58 24,26"/>
-                  <rect x="8" y="50" width="36" height="8"/>
-                </svg>
-                <span className="text-sm font-bold text-charcoal tracking-tight">1inch Aqua</span>
-              </div>
-              {/* Chainlink */}
-              <div className="flex items-center gap-2">
-                <svg viewBox="0 0 64 64" style={{ height: 28 }} xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" fill="#111" d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z M32 16 L46 24 L46 40 L32 48 L18 40 L18 24 Z"/>
-                </svg>
-                <span className="text-sm font-bold text-charcoal tracking-tight">Chainlink CRE</span>
-              </div>
+            <div className="flex flex-wrap gap-x-8 gap-y-4 items-center">
+              <TatumLogo variant="dark" height={22} />
+              <WalrusLogo color="#111111" height={18} />
             </div>
           </div>
         </div>
@@ -124,26 +107,13 @@ export default function Hero() {
             <br />
             Parlay.
             <br />
-            On Chain.
+            On Sui.
           </h2>
           <div>
-            <p style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.12em", color: "#666", marginBottom: 16 }}>// BUILT ON</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-              {/* 1inch */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <svg viewBox="0 0 52 64" style={{ height: 32 }} fill="#fff" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="8,26 24,6 36,6 36,58 24,58 24,26"/>
-                  <rect x="8" y="50" width="36" height="8"/>
-                </svg>
-                <span style={{ color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em" }}>1inch</span>
-              </div>
-              {/* Chainlink */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <svg viewBox="0 0 64 64" style={{ height: 32 }} xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" fill="#fff" d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z M32 16 L46 24 L46 40 L32 48 L18 40 L18 24 Z"/>
-                </svg>
-                <span style={{ color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em" }}>Chainlink</span>
-              </div>
+            <p style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: "0.12em", color: "#666", marginBottom: 16 }}>// TRACK 1 — MARKETS & SPORTS PREDICTION</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+              <TatumLogo variant="light" height={28} />
+              <WalrusLogo color="#FAF8F5" height={22} />
             </div>
           </div>
         </div>

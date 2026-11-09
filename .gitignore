@@ -17,6 +17,7 @@ Thumbs.db
 *.log
 npm-debug.log*
 /**/video
+/**/videos
 
 # Node
 node_modules/

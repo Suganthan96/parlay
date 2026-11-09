@@ -1,33 +1,33 @@
 const steps = [
   {
     quote:
-      "Pick up to 5 live outcomes across any sport. Each leg is a single prediction — one team wins, one event resolves. Prices update every 4 seconds from 1inch Aqua's live LMSR pool.",
+      "Pick up to 5 live outcomes across sports, politics, or crypto. Each leg is a single prediction. Tatum RPC fetches the latest market state from Sui Mainnet in real time — treasury balance, ticket objects, live SUI price.",
     name: "Step 01 — Pick Your Legs",
-    firm: "1inch Aqua · LMSR Pricing",
+    firm: "Tatum RPC · Polymarket API",
     bg: "var(--black)",
     color: "white",
   },
   {
     quote:
-      "SwapVM's ParlayPrice instruction multiplies the LMSR outcome probabilities across all your legs. The contract reads live q_i/b balances and shows you exactly what you pay before you sign anything.",
-    name: "Step 02 — Aqua Prices It",
-    firm: "SwapVM · ParlayPrice Instruction",
+      "LMSR pricing multiplies outcome probabilities across all your legs. The combined price is set before you sign — no slippage, no hidden fees. Walrus Memory recalls past market credibility to surface the most reliable predictions.",
+    name: "Step 02 — LMSR Prices It",
+    firm: "Walrus Memory · LMSR Formula",
     bg: "var(--mint)",
     color: "var(--black)",
   },
   {
     quote:
-      "One transaction. Your stake flows through ParlayRouter into ParlayVault, minting a single on-chain ticket. LP liquidity never moves — it stays in the LP's wallet via Aqua's non-custodial model.",
+      "One transaction on Sui Mainnet. Your stake flows into the ParlayVault, minting a single NFT ticket. The ticket metadata — all your legs, your stake, the payout — is stored on Walrus Blobs and anchored on-chain.",
     name: "Step 03 — One Ticket, On-Chain",
-    firm: "ParlayRouter · ParlayVault",
+    firm: "Sui Move · Walrus Blobs",
     bg: "var(--light-gray)",
     color: "var(--black)",
   },
   {
     quote:
-      "Chainlink Automation pushes verified match results on-chain the moment a game ends. Winning tickets unlock instant payouts. Losing tickets free LP capital immediately. No manual intervention.",
-    name: "Step 04 — Chainlink Settles",
-    firm: "Chainlink CRE · Automation",
+      "When a market resolves, the outcome is stored in Walrus Memory — building a credibility score for that market over time. Winning tickets unlock payouts from the on-chain treasury. The app gets smarter with every result.",
+    name: "Step 04 — Walrus Remembers",
+    firm: "Walrus Memory · ParlayVault",
     bg: "var(--white)",
     color: "var(--black)",
   },
@@ -50,7 +50,7 @@ export default function Testimonials() {
         </div>
       </div>
 
-      {/* Process step grid — same 4-cell layout as testimonials */}
+      {/* Process step grid */}
       <div className="page-grid" style={{ borderTop: "1px solid var(--border)" }}>
         {steps.map((t, i) => (
           <div

@@ -116,12 +116,12 @@ export default function Footer() {
           style={{ minHeight: 60 }}
         >
           <a
-            href="https://ethglobal.com"
+            href="https://tatum.io"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm font-medium hover:opacity-50 transition-opacity"
           >
-            ETHGlobal Mumbai 2026
+            Tatum × Walrus · Total Recall 2026
           </a>
         </div>
         <div
@@ -176,9 +176,9 @@ export default function Footer() {
               color: "var(--black)",
             }}
           >
-            Hackathon prototype.
+            Hackathon build.
             <br />
-            Testnet only.
+            Live on Mainnet.
           </h3>
           <a
             href="#how-it-works"
@@ -212,7 +212,7 @@ export default function Footer() {
           style={{ background: "var(--black)", minHeight: 52 }}
         >
           <p className="text-label text-white opacity-40">
-            © {new Date().getFullYear()} PARLAY MARKETS&nbsp;•&nbsp;Testnet / Fork Only
+            © {new Date().getFullYear()} PARLAY MARKETS&nbsp;•&nbsp;Sui Mainnet
           </p>
         </div>
         <div
@@ -220,7 +220,7 @@ export default function Footer() {
           style={{ background: "var(--mint)", minHeight: 52 }}
         >
           <p className="text-label opacity-50" style={{ color: "var(--black)" }}>
-            Built on 1inch Aqua · Chainlink CRE
+            Built on Tatum RPC · Walrus Memory · Sui Move
           </p>
         </div>
       </div>
