@@ -107,10 +107,10 @@ function SportCard({ event, onClick }: { event: SportEvent; onClick: () => void 
       </div>
 
       {/* Body — image left, content right (mirrors PolyCard) */}
-      <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1 }}>
+      <div style={{ padding: '20px 16px', display: 'flex', gap: 12, flex: 1 }}>
         {event.homeLogo
-          ? <img src={event.homeLogo} alt={event.homeTeam} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, background: '#f8f8f8', padding: 2, flexShrink: 0 }} />
-          : <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#999', flexShrink: 0 }}>{event.homeTeam.split(' ').pop()?.slice(0,3).toUpperCase()}</div>
+          ? <img src={event.homeLogo} alt={event.homeTeam} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, background: '#f8f8f8', padding: 2, flexShrink: 0, alignSelf: 'flex-start' }} />
+          : <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#999', flexShrink: 0, alignSelf: 'flex-start' }}>{event.homeTeam.split(' ').pop()?.slice(0,3).toUpperCase()}</div>
         }
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.homeTeam} vs {event.awayTeam}</p>
@@ -221,8 +221,8 @@ function PolyCard({ market, onClick }: { market: PolyMarket; onClick: () => void
           <span style={{ fontSize: 11, color: '#888', fontWeight: 600 }}>${(market.liquidity / 1000).toFixed(0)}k liq</span>
         </div>
       </div>
-      <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1 }}>
-        {market.image && <img src={market.image} alt="" style={{ width: 36, height: 36, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />}
+      <div style={{ padding: '20px 16px', display: 'flex', gap: 12, flex: 1 }}>
+        {market.image && <img src={market.image} alt="" style={{ width: 36, height: 36, borderRadius: 4, objectFit: 'cover', flexShrink: 0, alignSelf: 'flex-start' }} />}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, margin: 0 }}>{market.question}</p>
           <div style={{ marginTop: 'auto', paddingTop: 14 }}>
