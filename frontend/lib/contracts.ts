@@ -20,6 +20,9 @@ const ENV: Record<string, string> = {
   NEXT_PUBLIC_MAINNET_PACKAGE_ID:              process.env.NEXT_PUBLIC_MAINNET_PACKAGE_ID              ?? '',
   NEXT_PUBLIC_MAINNET_TREASURY_ID:             process.env.NEXT_PUBLIC_MAINNET_TREASURY_ID             ?? '',
   NEXT_PUBLIC_MAINNET_ADMIN_CAP_ID:            process.env.NEXT_PUBLIC_MAINNET_ADMIN_CAP_ID            ?? '',
+  NEXT_PUBLIC_MAINNET_MARKET_MANCITY_ARSENAL:  process.env.NEXT_PUBLIC_MAINNET_MARKET_MANCITY_ARSENAL  ?? '',
+  NEXT_PUBLIC_MAINNET_MARKET_REALMADRID_LIVERPOOL: process.env.NEXT_PUBLIC_MAINNET_MARKET_REALMADRID_LIVERPOOL ?? '',
+  NEXT_PUBLIC_MAINNET_MARKET_PSG_BAYERN:       process.env.NEXT_PUBLIC_MAINNET_MARKET_PSG_BAYERN       ?? '',
 };
 
 function envOrEmpty(key: string): string {
@@ -48,16 +51,43 @@ export function getAdminCapId(network: Network = 'testnet'): string {
 export const CLOCK_OBJECT_ID = '0x6';
 export const SUI_COIN_TYPE   = '0x2::sui::SUI';
 
-// On-chain PredictionMarket object IDs keyed by matchId (testnet)
+// On-chain PredictionMarket object IDs keyed by matchId
 export const TESTNET_MARKET_IDS: Record<string, string> = {
   'manchester-city-arsenal':    envOrEmpty('NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL'),
   'real-madrid-liverpool':      envOrEmpty('NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL'),
   'psg-bayern':                 envOrEmpty('NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN'),
 };
 
+export const MAINNET_MARKET_IDS: Record<string, string> = {
+  'manchester-city-arsenal':    envOrEmpty('NEXT_PUBLIC_MAINNET_MARKET_MANCITY_ARSENAL'),
+  'real-madrid-liverpool':      envOrEmpty('NEXT_PUBLIC_MAINNET_MARKET_REALMADRID_LIVERPOOL'),
+  'psg-bayern':                 envOrEmpty('NEXT_PUBLIC_MAINNET_MARKET_PSG_BAYERN'),
+};
+
 export function getMarketObjectId(matchId: string, network: Network = 'testnet'): string {
-  if (network !== 'testnet') return '';
-  return TESTNET_MARKET_IDS[matchId] ?? '';
+  const ids = network === 'mainnet' ? MAINNET_MARKET_IDS : TESTNET_MARKET_IDS;
+  return ids[matchId] ?? '';
+}
+
+const MATCH_DISPLAY: Record<string, string> = {
+  'manchester-city-arsenal':    'Man City vs Arsenal',
+  'real-madrid-liverpool':      'Real Madrid vs Liverpool',
+  'psg-bayern':                 'PSG vs Bayern',
+};
+
+export function matchLabelFromMarketId(marketObjectId: string, _network?: Network): string {
+  const id = marketObjectId.toLowerCase();
+  // Build a reverse map keyed by object ID (both networks).
+  // Cannot spread by matchId — same key overwrites, losing one network's IDs.
+  const reverseMap = new Map<string, string>();
+  for (const [matchId, objId] of Object.entries(TESTNET_MARKET_IDS)) {
+    reverseMap.set(objId.toLowerCase(), matchId);
+  }
+  for (const [matchId, objId] of Object.entries(MAINNET_MARKET_IDS)) {
+    reverseMap.set(objId.toLowerCase(), matchId);
+  }
+  const matchId = reverseMap.get(id);
+  return matchId ? (MATCH_DISPLAY[matchId] ?? matchId) : marketObjectId.slice(0, 10) + '…';
 }
 
 // WAD denominator — matches Move contracts

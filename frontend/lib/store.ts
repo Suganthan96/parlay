@@ -15,6 +15,7 @@ export interface TicketMeta {
   stake:     number;
   timestamp: number;
   legs:      TicketLegMeta[];
+  memoryId?: string;
 }
 
 interface ParlayStore {
@@ -47,7 +48,7 @@ export const useParlayStore = create<ParlayStore>()(
       clearLegs: () => set({ legs: [] }),
       hasMarket: (marketId) => get().legs.some(l => l.marketId === marketId),
       saveTicketMeta: (ticketId, meta) =>
-        set(s => ({ ticketMeta: { ...s.ticketMeta, [ticketId]: meta } })),
+        set(s => ({ ticketMeta: { ...s.ticketMeta, [ticketId]: { ...s.ticketMeta[ticketId], ...meta } } })),
       markCashedOut: (ticketId) =>
         set(s => ({ cashedOutTickets: [...new Set([...s.cashedOutTickets, ticketId])] })),
       isCashedOut: (ticketId) => get().cashedOutTickets.includes(ticketId),

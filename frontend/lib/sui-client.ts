@@ -1,37 +1,21 @@
-import { SuiJsonRpcClient as SuiClient, JsonRpcHTTPTransport as SuiHTTPTransport } from '@mysten/sui/jsonRpc';
+import { SuiGrpcClient } from '@mysten/sui/grpc';
 
 export type Network = 'testnet' | 'mainnet';
 
-const TATUM_TESTNET_KEY = process.env.NEXT_PUBLIC_TATUM_TESTNET_KEY ?? '';
-const TATUM_MAINNET_KEY = process.env.NEXT_PUBLIC_TATUM_MAINNET_KEY ?? '';
-
-const NETWORK_CONFIG: Record<Network, { url: string; apiKey: string }> = {
-  testnet: {
-    url:    'https://sui-testnet.tatum.io',
-    apiKey: TATUM_TESTNET_KEY,
-  },
-  mainnet: {
-    url:    'https://sui-mainnet.tatum.io',
-    apiKey: TATUM_MAINNET_KEY,
-  },
+// Public fullnodes support gRPC-web on port 443 (JSON-RPC deprecated in v1.80+)
+const GRPC_URLS: Record<Network, string> = {
+  testnet: 'https://fullnode.testnet.sui.io',
+  mainnet: 'https://fullnode.mainnet.sui.io',
 };
 
-export function makeSuiClient(network: Network = 'testnet'): SuiClient {
-  const { url, apiKey } = NETWORK_CONFIG[network];
-  return new SuiClient({
-    network,
-    transport: new SuiHTTPTransport({
-      url,
-      rpc: { headers: { 'x-api-key': apiKey } },
-    }),
-  });
+export function makeSuiClient(network: Network = 'testnet'): SuiGrpcClient {
+  return new SuiGrpcClient({ network, baseUrl: GRPC_URLS[network] });
 }
 
-// Singleton clients (re-created on network switch via context)
-let _testnetClient: SuiClient | null = null;
-let _mainnetClient: SuiClient | null = null;
+let _testnetClient: SuiGrpcClient | null = null;
+let _mainnetClient: SuiGrpcClient | null = null;
 
-export function getClient(network: Network = 'testnet'): SuiClient {
+export function getClient(network: Network = 'testnet'): SuiGrpcClient {
   if (network === 'mainnet') {
     if (!_mainnetClient) _mainnetClient = makeSuiClient('mainnet');
     return _mainnetClient;
@@ -41,12 +25,12 @@ export function getClient(network: Network = 'testnet'): SuiClient {
 }
 
 export const EXPLORER: Record<Network, string> = {
-  testnet: 'https://suiscan.xyz/testnet',
-  mainnet: 'https://suiscan.xyz/mainnet',
+  testnet: 'https://testnet.suivision.xyz',
+  mainnet: 'https://suivision.xyz',
 };
 
 export function txUrl(digest: string, network: Network = 'testnet'): string {
-  return `${EXPLORER[network]}/tx/${digest}`;
+  return `${EXPLORER[network]}/txblock/${digest}`;
 }
 
 export function objectUrl(objectId: string, network: Network = 'testnet'): string {
