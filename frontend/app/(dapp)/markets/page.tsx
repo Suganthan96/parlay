@@ -62,6 +62,53 @@ function SparkChart({ value, seed, color = '#00dc82', label = '30D TREND' }: { v
   );
 }
 
+// ── Team badge — shows logo with onError fallback to coloured abbreviation ─────
+
+const TEAM_COLORS: Record<string, string> = {
+  'bears': '#0B1F4A', 'falcons': '#A71930', 'colts': '#003B6F', 'chiefs': '#E31837',
+  'dolphins': '#008E97', 'buccaneers': '#D50A0A', 'bengals': '#FB4F14', 'cowboys': '#003594',
+  'lions': '#0076B6', 'giants': '#0B2265', 'eagles': '#004C54', 'jets': '#125740',
+  'patriots': '#002244', 'bills': '#00338D', 'ravens': '#241773', 'steelers': '#FFB612',
+  'browns': '#311D00', 'texans': '#03202F', 'titans': '#0C2340', 'jaguars': '#006778',
+  'broncos': '#FB4F14', 'raiders': '#000000', 'chargers': '#0080C6', 'seahawks': '#002244',
+  'rams': '#003594', '49ers': '#AA0000', 'cardinals': '#97233F', 'saints': '#D3BC8D',
+  'panthers': '#0085CA', 'buccaneers2': '#D50A0A', 'packers': '#203731', 'bears2': '#0B1F4A',
+  'vikings': '#4F2683', 'bears3': '#0B1F4A', 'default': '#374151',
+};
+
+function teamColor(name: string): string {
+  const word = name.toLowerCase().split(' ').pop() ?? '';
+  return TEAM_COLORS[word] ?? TEAM_COLORS['default'];
+}
+
+function teamAbbr(name: string): string {
+  const words = name.trim().split(' ');
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+  return words.slice(-2).map(w => w[0]).join('').toUpperCase();
+}
+
+function TeamBadge({ name, logo, size = 36 }: { name: string; logo?: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const abbr  = teamAbbr(name);
+  const color = teamColor(name);
+  const style: React.CSSProperties = {
+    width: size, height: size, borderRadius: 4, flexShrink: 0, alignSelf: 'flex-start',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontWeight: 800, fontSize: size * 0.28, letterSpacing: '0.02em',
+    background: color, color: '#fff',
+  };
+  if (logo && !failed) {
+    return (
+      <img
+        src={logo} alt={name}
+        onError={() => setFailed(true)}
+        style={{ ...style, objectFit: 'contain', background: color, padding: 2 }}
+      />
+    );
+  }
+  return <div style={style}>{abbr}</div>;
+}
+
 // ── Sport icon map ─────────────────────────────────────────────────────────────
 
 const SPORT_ICON: Record<string, string> = {
@@ -89,7 +136,7 @@ function SportDetailModal({ event, onClose }: { event: SportEvent; onClose: () =
       <div onClick={e => e.stopPropagation()} style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', width: '100%', maxWidth: 760, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 48px 96px rgba(0,0,0,0.8)' }}>
         <div style={{ padding: '18px 24px', borderBottom: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
           <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            {event.homeLogo && <img src={event.homeLogo} alt="" style={{ width: 48, height: 48, objectFit: 'contain', background: '#fff', padding: 4, borderRadius: 3, flexShrink: 0 }} />}
+            <TeamBadge name={event.homeTeam} logo={event.homeLogo} size={48} />
             <div>
               <p style={{ fontSize: 11, color: '#777', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>{SPORT_ICON[event.sport]} {SPORT_LABEL[event.sport]} · {kicks}</p>
               <p style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.35 }}>{event.homeTeam} vs {event.awayTeam}</p>
@@ -99,7 +146,7 @@ function SportDetailModal({ event, onClose }: { event: SportEvent; onClose: () =
         </div>
         <div style={{ padding: 24 }}>
           <div style={{ display: 'flex', gap: 32, marginBottom: 24, alignItems: 'center' }}>
-            {event.awayLogo && <img src={event.awayLogo} alt={event.awayTeam} style={{ width: 40, height: 40, objectFit: 'contain', background: '#fff', padding: 4, borderRadius: 3 }} />}
+            <TeamBadge name={event.awayTeam} logo={event.awayLogo} size={40} />
             <div style={{ textAlign: 'center' }}>
               <p style={{ fontSize: 10, color: '#00dc82', fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>{event.homeTeam.toUpperCase()}</p>
               <p style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.04em', color: '#00dc82', lineHeight: 1 }}>{(homeProb * 100).toFixed(0)}%</p>
@@ -160,12 +207,9 @@ function SportCard({ event, onClick }: { event: SportEvent; onClick: () => void 
         <span style={{ fontSize: 9, fontWeight: 800, color: statusColor, letterSpacing: '0.08em' }}>■ {statusText}</span>
       </div>
 
-      {/* Body — image left, content right (mirrors PolyCard) */}
+      {/* Body — team badge left, content right (mirrors PolyCard) */}
       <div style={{ padding: '20px 16px', display: 'flex', gap: 12, flex: 1 }}>
-        {event.homeLogo
-          ? <img src={event.homeLogo} alt={event.homeTeam} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, background: '#f8f8f8', padding: 2, flexShrink: 0, alignSelf: 'flex-start' }} />
-          : <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#999', flexShrink: 0, alignSelf: 'flex-start' }}>{event.homeTeam.split(' ').pop()?.slice(0,3).toUpperCase()}</div>
-        }
+        <TeamBadge name={event.homeTeam} logo={event.homeLogo} />
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.homeTeam} vs {event.awayTeam}</p>
           <div style={{ marginTop: 'auto', paddingTop: 14 }}>
