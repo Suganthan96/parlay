@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typedRoutes: false,
+  // Server-only SDK with optional dynamic imports (ai, @mysten/walrus) — load from node_modules at runtime
+  serverExternalPackages: ['@mysten-incubation/memwal'],
   webpack(config) {
     // @coinbase/cdp-sdk (pulled in by @base-org/account → baseAccount wagmi connector)
     // has optional x402 peer deps that aren't installed. We don't use the Base Account

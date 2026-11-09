@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useCurrentAccount, useConnectWallet, useWallets } from '@mysten/dapp-kit';
 import { useBuyParlay } from '@/lib/hooks';
 import { useParlayStore } from '@/lib/store';
 import type { Network } from '@/lib/sui-client';
 import { txUrl } from '@/lib/sui-client';
+import { memoryBlobUrl } from '@/lib/walrus';
 
 interface Props {
   marketObjectIds:  string[];
@@ -34,6 +36,7 @@ export default function BuyParlayButton({
   const { legs, saveTicketMeta } = useParlayStore();
 
   const { buyParlay, isPending, isSuccess, txDigest, errorMsg } = useBuyParlay();
+  const [memoryLink, setMemoryLink] = useState<string>('');
 
   const disabled = !isConnected || !hasOnChain || marketObjectIds.length === 0 || stakeSui <= 0;
 
@@ -52,14 +55,45 @@ export default function BuyParlayButton({
       minPayoutSui,
       legs:        legsMeta.length ? legsMeta : legs.map(l => ({ market: l.marketLabel, outcome: l.outcome, odds: 1 / l.price })),
       network,
-      onSuccess: (digest) => {
-        // Save ticket metadata locally so tickets page can display market names
-        saveTicketMeta(digest, {
+      onSuccess: (digest, ticketObjectId) => {
+        const key        = ticketObjectId || digest;
+        const metaBase   = {
           txHash:    digest,
           stake:     stakeSui,
           timestamp: Date.now(),
           legs:      legs.map(l => ({ question: l.marketLabel, outcome: l.outcome, price: l.price })),
-        });
+        };
+        saveTicketMeta(key, metaBase);
+        if (ticketObjectId && ticketObjectId !== digest) {
+          saveTicketMeta(digest, metaBase);
+        }
+
+        // Fire-and-forget: record pick in Walrus Memory, then patch memoryId into the meta
+        fetch('/api/memwal', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userAddress: account?.address ?? 'unknown',
+            legs: legsMeta.length
+              ? legsMeta
+              : legs.map(l => ({ market: l.marketLabel, outcome: l.outcome, odds: 1 / l.price })),
+            txDigest: digest,
+          }),
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then((data: any) => {
+            const id: string = data?.memoryId ?? '';
+            if (id && id !== 'ok') {
+              const link = memoryBlobUrl(id);
+              setMemoryLink(link);
+              saveTicketMeta(key, { memoryId: id } as any);
+              if (ticketObjectId && ticketObjectId !== digest) {
+                saveTicketMeta(digest, { memoryId: id } as any);
+              }
+            }
+          })
+          .catch(() => {});
+
         onSuccess?.();
       },
     });
@@ -104,9 +138,9 @@ export default function BuyParlayButton({
               {isSuccess ? '■ Ticket minted on Sui' : '■ Tx submitted'}
             </span>
             {isSuccess && (
-              <a href="/tickets" style={{ fontWeight: 700, color: 'var(--black)', textDecoration: 'none', fontSize: 11, letterSpacing: '0.04em' }}>
+              <Link href="/tickets" style={{ fontWeight: 700, color: 'var(--black)', textDecoration: 'none', fontSize: 11, letterSpacing: '0.04em' }}>
                 VIEW TICKET →
-              </a>
+              </Link>
             )}
           </div>
           {txDigest && (
@@ -118,6 +152,19 @@ export default function BuyParlayButton({
             >
               {txDigest.slice(0, 14)}…{txDigest.slice(-6)} ↗
             </a>
+          )}
+          {memoryLink && (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+              <a
+                href={memoryLink}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#059669', textDecoration: 'none' }}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, borderRadius: '50%', background: '#059669', color: 'white', fontSize: 9, flexShrink: 0 }}>W</span>
+                Walrus Memory recorded ↗
+              </a>
+            </div>
           )}
         </div>
       )}

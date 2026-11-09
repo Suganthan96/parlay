@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useSuiClientContext } from '@mysten/dapp-kit';
 import { useParlayStore } from '@/lib/store';
-import { useQuoteParlay, useSuiUsdPrice } from '@/lib/hooks';
+import { useQuoteParlay, useSuiUsdPrice, useTreasuryBalance } from '@/lib/hooks';
 import type { ParlayLeg } from '@/lib/types';
 import type { Network } from '@/lib/sui-client';
 import BuyParlayButton from '@/components/BuyParlayButton';
+import { getMarketObjectId } from '@/lib/contracts';
 
 export default function ParlayPage() {
   const { legs, removeLeg, clearLegs } = useParlayStore();
@@ -21,17 +22,18 @@ export default function ParlayPage() {
   // Deployed soccer market objects — used as fallback anchors for sport legs
   // that come from ESPN and don't carry their own on-chain marketObjectId.
   const FALLBACK_MARKETS = [
-    process.env.NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL,
-    process.env.NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL,
-    process.env.NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN,
-  ].filter(Boolean) as string[];
+    getMarketObjectId('manchester-city-arsenal', network),
+    getMarketObjectId('real-madrid-liverpool', network),
+    getMarketObjectId('psg-bayern', network),
+  ].filter(Boolean);
 
   // Build on-chain args: use the leg's own market object if available, otherwise
   // cycle through the fallback soccer markets so the PTB always has valid IDs.
   const onChainMarkets  = legs.map((l, i) =>
-    l.marketObjectId ?? FALLBACK_MARKETS[i % Math.max(FALLBACK_MARKETS.length, 1)]
+    l.marketObjectId || FALLBACK_MARKETS[i % Math.max(FALLBACK_MARKETS.length, 1)]
   ).filter(Boolean) as string[];
-  const onChainOutcomes = legs.map(l => l.outcomeIdx ?? 1);
+  // 1 = Home/YES, 2 = Away/NO — the contract's leg_summary records this choice on-chain
+  const onChainOutcomes = legs.map(l => l.outcomeIdx ?? (/^no$/i.test(l.outcome) ? 2 : 1));
   // WAD-scaled decimal odds: l.price is implied probability, decimal odds = 1/price
   const onChainOddsWad  = legs.map(l => BigInt(Math.round((1 / l.price) * 1_000_000_000)));
   const hasOnChain      = onChainMarkets.length === legs.length && legs.length > 0;
@@ -43,6 +45,13 @@ export default function ParlayPage() {
   const priceTip       = hasOnChain ? 'SUI ON-CHAIN QUOTE' : 'CLIENT-SIDE ESTIMATE';
   const slippagePct    = Math.max(0, Math.min(50, parseFloat(slippage) || 5));
   const minPayoutSui   = displayPayout > 0 ? displayPayout * (1 - slippagePct / 100) : 0;
+
+  // The contract aborts (EInsufficientTreasury) if the house can't cover the payout.
+  // Keep a 2% buffer since the on-chain payout is computed independently.
+  const treasurySui    = useTreasuryBalance(network);
+  const houseLimitSui  = treasurySui !== null ? treasurySui * 0.98 : null;
+  const exceedsHouse   = houseLimitSui !== null && displayPayout > houseLimitSui;
+  const maxStakeSui    = exceedsHouse && displayPayout > 0 ? (houseLimitSui! / displayPayout) * stake : 0;
 
   // USD display via Tatum Prices API
   const payoutUsd = suiPrice > 0 ? `≈ $${(displayPayout * suiPrice).toFixed(2)}` : '';
@@ -217,15 +226,27 @@ export default function ParlayPage() {
                 </span>
               </div>
             )}
+            {exceedsHouse && (
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', padding: '10px 14px' }}>
+                Payout of {displayPayout.toFixed(4)} SUI exceeds the House Treasury limit of {houseLimitSui!.toFixed(4)} SUI.
+                {' '}
+                <button
+                  onClick={() => setAmount((Math.floor(maxStakeSui * 10000) / 10000).toString())}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 700, color: '#b45309', textDecoration: 'underline', fontSize: 12 }}
+                >
+                  Set stake to {(Math.floor(maxStakeSui * 10000) / 10000).toFixed(4)} SUI
+                </button>
+              </div>
+            )}
             <BuyParlayButton
               marketObjectIds={onChainMarkets}
               outcomeIdxs={onChainOutcomes}
               oddsWad={onChainOddsWad}
               stakeSui={stake}
-              hasOnChain={hasOnChain}
+              hasOnChain={hasOnChain && !exceedsHouse}
               minPayoutSui={minPayoutSui}
               network={network}
-              stakeLabel={stake > 0 ? `Buy parlay for ${stake.toFixed(2)} SUI` : undefined}
+              stakeLabel={exceedsHouse ? 'Exceeds house limit' : stake > 0 ? `Buy parlay for ${stake.toFixed(4)} SUI` : undefined}
               onSuccess={clearLegs}
             />
           </div>

@@ -4,8 +4,23 @@
  * Stores JSON blobs on Walrus and returns a blobId that is anchored in the Sui Ticket object.
  */
 
+// Mainnet Walrus requires WAL tokens to store — always use testnet publisher (free).
+// All metadata blobs live on testnet Walrus regardless of Sui network.
 const PUBLISHER  = 'https://publisher.walrus-testnet.walrus.space';
 const AGGREGATOR = 'https://aggregator.walrus-testnet.walrus.space';
+
+export function walrusAggregatorUrl(_network?: string): string {
+  return AGGREGATOR;
+}
+
+export function walrusBlobUrl(blobId: string): string {
+  return `${AGGREGATOR}/v1/blobs/${blobId}`;
+}
+
+// Walrus Memory blobs are SEAL-encrypted and live on Walrus mainnet (production relayer)
+export function memoryBlobUrl(blobId: string): string {
+  return `https://walruscan.com/mainnet/blob/${blobId}`;
+}
 
 // ── Store ────────────────────────────────────────────────────────────────────
 
@@ -21,7 +36,6 @@ export async function storeBlob(data: object): Promise<string> {
     throw new Error(`Walrus store failed ${res.status}: ${text.slice(0, 200)}`);
   }
   const json = await res.json();
-  // Response contains either newlyCreated or alreadyCertified
   const blobId: string =
     json?.newlyCreated?.blobObject?.blobId ??
     json?.alreadyCertified?.blobId ??
@@ -53,8 +67,12 @@ export async function storeTicketMeta(meta: {
   payoutSui:     number;
   buyerAddress:  string;
   purchasedAt:   string;
+  network?:      string;
+  txHash?:       string;
 }): Promise<{ blobId: string; blobIdBytes: number[] }> {
-  const blobId    = await storeBlob(meta);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { network: _net, ...data } = meta;
+  const blobId    = await storeBlob(data);
   const blobIdBytes = blobIdToBytes(blobId);
   return { blobId, blobIdBytes };
 }

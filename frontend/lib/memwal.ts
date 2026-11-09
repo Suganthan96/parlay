@@ -1,120 +1,79 @@
 /**
- * Walrus Memory (MemWal) integration.
- * Used for: credibility scores, pick history, market memories, outcome records.
- * All calls are server-side only (private key stays on server).
+ * Walrus Memory (MemWal) integration via the official SDK.
+ * Server-side only — the delegate key never reaches the browser.
  */
+import { MemWal } from '@mysten-incubation/memwal';
 
-const MEMWAL_SERVER   = 'https://relayer.memory.walrus.xyz';
-const MEMWAL_AGENT_ID = process.env.MEMWAL_AGENT_ID    ?? '';
-const MEMWAL_ACCOUNT  = process.env.MEMWAL_ACCOUNT_ID  ?? '';
-const MEMWAL_KEY      = process.env.MEMWAL_PRIVATE_KEY ?? '';
+let client: MemWal | null = null;
 
-function headers() {
-  return {
-    'Content-Type':  'application/json',
-    'Authorization': `Bearer ${MEMWAL_KEY}`,
-  };
-}
-
-// ── remember ─────────────────────────────────────────────────────────────────
-
-export async function remember(namespace: string, text: string): Promise<string> {
-  const res = await fetch(`${MEMWAL_SERVER}/api/v1/remember`, {
-    method:  'POST',
-    headers: headers(),
-    body: JSON.stringify({
-      agentId:   MEMWAL_AGENT_ID,
-      accountId: MEMWAL_ACCOUNT,
-      namespace,
-      text,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`MemWal remember failed: ${err}`);
+function memwal(): MemWal {
+  if (!client) {
+    const key       = process.env.MEMWAL_PRIVATE_KEY;
+    const accountId = process.env.MEMWAL_ACCOUNT_ID;
+    if (!key || !accountId) throw new Error('MEMWAL_PRIVATE_KEY / MEMWAL_ACCOUNT_ID not configured');
+    client = MemWal.create({
+      key,
+      accountId,
+      serverUrl: process.env.MEMWAL_SERVER_URL || 'https://relayer.memory.walrus.xyz',
+      namespace: 'parlay',
+    });
   }
-  const json = await res.json();
-  return json.id ?? json.blobId ?? 'ok';
+  return client;
 }
 
-// ── rememberBulk ──────────────────────────────────────────────────────────────
+// Returns the Walrus blob ID of the stored (encrypted) memory.
+export async function remember(namespace: string, text: string): Promise<string> {
+  const res = await memwal().rememberAndWait(text, namespace);
+  return res.blob_id;
+}
 
-export async function rememberBulk(
-  namespace: string,
-  items: string[],
-): Promise<string[]> {
+export async function rememberBulk(namespace: string, items: string[]): Promise<string[]> {
   return Promise.all(items.map(text => remember(namespace, text)));
 }
 
-// ── recall ───────────────────────────────────────────────────────────────────
-
 export async function recall(namespace: string, query: string): Promise<string> {
-  const res = await fetch(`${MEMWAL_SERVER}/api/v1/recall`, {
-    method:  'POST',
-    headers: headers(),
-    body: JSON.stringify({
-      agentId:   MEMWAL_AGENT_ID,
-      accountId: MEMWAL_ACCOUNT,
-      namespace,
-      query,
-    }),
-  });
-  if (!res.ok) return '';
-  const json = await res.json();
-  return json.text ?? json.result ?? '';
+  try {
+    const res = await memwal().recall(query, 5, namespace);
+    return res.results.map(r => r.text).join('\n');
+  } catch {
+    return '';
+  }
 }
 
-// ── analyze ───────────────────────────────────────────────────────────────────
-
-export async function analyze(namespace: string, query: string): Promise<string> {
-  const res = await fetch(`${MEMWAL_SERVER}/api/v1/analyze`, {
-    method:  'POST',
-    headers: headers(),
-    body: JSON.stringify({
-      agentId:   MEMWAL_AGENT_ID,
-      accountId: MEMWAL_ACCOUNT,
-      namespace,
-      query,
-    }),
-  });
-  if (!res.ok) return '';
-  const json = await res.json();
-  return json.analysis ?? json.text ?? '';
+export async function analyze(namespace: string, text: string): Promise<string> {
+  try {
+    const res = await memwal().analyze(text, namespace);
+    return res.facts.map(f => (f as any).text ?? String(f)).join('\n');
+  } catch {
+    return '';
+  }
 }
 
 // ── Domain helpers ────────────────────────────────────────────────────────────
 
-// Record a user's pick — called when they buy a parlay
 export async function recordPick(
   userAddress: string,
   legs: Array<{ market: string; outcome: string; odds: number }>,
   txDigest: string,
-): Promise<void> {
+): Promise<string> {
   const summary = legs.map(l => `${l.market} → ${l.outcome} @ ${l.odds.toFixed(2)}x`).join(', ');
-  await remember('picks', `User ${userAddress} placed parlay: [${summary}] tx=${txDigest} at ${new Date().toISOString()}`);
+  return remember('picks', `User ${userAddress} placed parlay: [${summary}] tx=${txDigest} at ${new Date().toISOString()}`);
 }
 
-// Record a settlement outcome — called by the settlement watcher
 export async function recordOutcome(
   marketId: string,
   homeTeam: string,
   awayTeam: string,
   result: 'home' | 'away' | 'draw',
-): Promise<void> {
-  await remember('outcomes', `Market ${marketId} (${homeTeam} vs ${awayTeam}) settled: ${result} won at ${new Date().toISOString()}`);
+): Promise<string> {
+  return remember('outcomes', `Market ${marketId} (${homeTeam} vs ${awayTeam}) settled: ${result} won at ${new Date().toISOString()}`);
 }
 
-// Update a user's credibility score based on win/loss history
-export async function updateCredibility(
-  userAddress: string,
-  won: boolean,
-  legs: number,
-): Promise<void> {
+export async function updateCredibility(userAddress: string, won: boolean, legs: number): Promise<void> {
   const event = won ? `WON ${legs}-leg parlay` : `LOST ${legs}-leg parlay`;
   await remember('credibility', `User ${userAddress}: ${event} at ${new Date().toISOString()}`);
 }
 
-// Get a user's credibility summary
 export async function getCredibility(userAddress: string): Promise<string> {
   return recall('credibility', `What is the parlay win rate and history for user ${userAddress}?`);
 }
