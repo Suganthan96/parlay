@@ -112,16 +112,16 @@ function SportCard({ event, onClick }: { event: SportEvent; onClick: () => void 
           ? <img src={event.homeLogo} alt={event.homeTeam} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, background: '#f8f8f8', padding: 2, flexShrink: 0 }} />
           : <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#999', flexShrink: 0 }}>{event.homeTeam.split(' ').pop()?.slice(0,3).toUpperCase()}</div>
         }
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, margin: '0 0 14px' }}>{event.homeTeam} vs {event.awayTeam}</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, margin: '0 0 14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.homeTeam} vs {event.awayTeam}</p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
               <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em', color: '#16a34a' }}>{(homeProb * 100).toFixed(0)}%</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a' }}>{event.homeTeam.split(' ').pop()?.toUpperCase()}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a' }}>HOME</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
               <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em', color: '#dc2626', opacity: 0.75 }}>{(awayProb * 100).toFixed(0)}%</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626', opacity: 0.75 }}>{event.awayTeam.split(' ').pop()?.toUpperCase()}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626', opacity: 0.75 }}>AWAY</span>
             </div>
           </div>
           <div style={{ height: 6, background: '#f5f5f5', borderRadius: 3, overflow: 'hidden', display: 'flex' }}>
