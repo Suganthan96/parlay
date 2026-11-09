@@ -197,16 +197,18 @@ function PolyCard({ market, onClick }: { market: PolyMarket; onClick: () => void
   );
 }
 
-// ── Sport tab filter ───────────────────────────────────────────────────────────
+// ── Unified tab filter ─────────────────────────────────────────────────────────
 
-type SportTab = 'all' | 'nfl' | 'nba' | 'soccer' | 'mma';
-type PolyTab  = 'all' | 'politics' | 'crypto' | 'sports' | 'world';
+type UnifiedTab = 'all' | 'nfl' | 'nba' | 'soccer' | 'mma' | 'politics' | 'crypto' | 'world';
 
-function inferCategory(q: string): PolyTab {
+type FeedItem =
+  | { kind: 'sport'; event: SportEvent }
+  | { kind: 'poly';  market: PolyMarket };
+
+function inferPolyCategory(q: string): 'politics' | 'crypto' | 'world' {
   const t = q.toLowerCase();
   if (/bitcoin|eth|crypto|btc|sol|token|coin|defi|nft|polymarket|blockchain/.test(t)) return 'crypto';
   if (/election|president|senate|congress|vote|trump|biden|democrat|republican|prime minister|parliament/.test(t)) return 'politics';
-  if (/win|championship|league|season|nba|nfl|epl|fifa|super bowl|world cup|match|game|sport/.test(t)) return 'sports';
   return 'world';
 }
 
@@ -217,8 +219,7 @@ export default function MarketsPage() {
   const [polymarkets, setPolymarkets] = useState<PolyMarket[]>([]);
   const [sportsLoading, setSportsLoading] = useState(true);
   const [polyLoading,   setPolyLoading]   = useState(true);
-  const [sportTab,    setSportTab]    = useState<SportTab>('all');
-  const [polyTab,     setPolyTab]     = useState<PolyTab>('all');
+  const [activeTab,   setActiveTab]   = useState<UnifiedTab>('all');
   const [selected,    setSelected]    = useState<PolyMarket | null>(null);
 
   const { legs } = useParlayStore();
@@ -246,42 +247,35 @@ export default function MarketsPage() {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  // Sport tabs
-  const sportTabs: { key: SportTab; label: string; icon: string }[] = [
-    { key: 'all',    label: 'ALL SPORTS', icon: '🏆' },
-    { key: 'nfl',    label: 'NFL',        icon: '🏈' },
-    { key: 'nba',    label: 'NBA',        icon: '🏀' },
-    { key: 'soccer', label: 'EPL',        icon: '⚽' },
-    { key: 'mma',    label: 'UFC',        icon: '🥊' },
+  // Build unified feed — sports first, then poly
+  const allItems: FeedItem[] = [
+    ...sports.map(e => ({ kind: 'sport' as const, event: e })),
+    ...polymarkets.map(m => ({ kind: 'poly' as const, market: m })),
   ];
 
-  const filteredSports = sportTab === 'all' ? sports : sports.filter(s => s.sport === sportTab);
-  const sportCounts: Record<SportTab, number> = {
-    all:    sports.length,
-    nfl:    sports.filter(s => s.sport === 'nfl').length,
-    nba:    sports.filter(s => s.sport === 'nba').length,
-    soccer: sports.filter(s => s.sport === 'soccer').length,
-    mma:    sports.filter(s => s.sport === 'mma').length,
+  const filteredItems: FeedItem[] = activeTab === 'all' ? allItems : allItems.filter(item => {
+    if (item.kind === 'sport') return item.event.sport === activeTab;
+    return inferPolyCategory(item.market.question) === activeTab;
+  });
+
+  const count = (tab: UnifiedTab) => {
+    if (tab === 'all') return allItems.length;
+    return allItems.filter(item => {
+      if (item.kind === 'sport') return item.event.sport === tab;
+      return inferPolyCategory(item.market.question) === tab;
+    }).length;
   };
 
-  // Poly tabs
-  const polyTabs: { key: PolyTab; label: string }[] = [
-    { key: 'all',      label: 'ALL' },
-    { key: 'politics', label: 'ELECTIONS' },
-    { key: 'sports',   label: 'SPORTS' },
-    { key: 'crypto',   label: 'CRYPTO' },
-    { key: 'world',    label: 'CULTURE & WORLD' },
+  const tabs: { key: UnifiedTab; label: string; icon: string }[] = [
+    { key: 'all',      label: 'ALL',       icon: '🏆' },
+    { key: 'nfl',      label: 'NFL',       icon: '🏈' },
+    { key: 'nba',      label: 'NBA',       icon: '🏀' },
+    { key: 'soccer',   label: 'EPL',       icon: '⚽' },
+    { key: 'mma',      label: 'UFC',       icon: '🥊' },
+    { key: 'politics', label: 'ELECTIONS', icon: '🗳️' },
+    { key: 'crypto',   label: 'CRYPTO',    icon: '💰' },
+    { key: 'world',    label: 'WORLD',     icon: '🌍' },
   ];
-  const filteredPoly = polyTab === 'all'
-    ? polymarkets
-    : polymarkets.filter(m => inferCategory(m.question) === polyTab);
-  const polyCounts: Record<PolyTab, number> = {
-    all:      polymarkets.length,
-    politics: polymarkets.filter(m => inferCategory(m.question) === 'politics').length,
-    sports:   polymarkets.filter(m => inferCategory(m.question) === 'sports').length,
-    crypto:   polymarkets.filter(m => inferCategory(m.question) === 'crypto').length,
-    world:    polymarkets.filter(m => inferCategory(m.question) === 'world').length,
-  };
 
   return (
     <div style={{ maxWidth: 1440, margin: '0 auto', borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
@@ -326,50 +320,33 @@ export default function MarketsPage() {
         </div>
       </div>
 
-      {/* ── Live Sports (ESPN real data) ── */}
+      {/* ── Unified feed ── */}
       <div style={{ borderTop: '1px solid var(--border)' }}>
-        <div style={{ padding: '12px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span className="text-label" style={{ fontSize: 9, background: '#000', color: '#fff', padding: '2px 8px', marginRight: 4 }}>■ LIVE SPORTS ODDS</span>
-          {sportTabs.map(tab => (
-            <button key={tab.key} onClick={() => setSportTab(tab.key)} style={{ padding: '3px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', border: '1px solid var(--border)', background: sportTab === tab.key ? 'var(--black)' : 'transparent', color: sportTab === tab.key ? 'var(--white)' : 'var(--black)' }}>
-              {tab.icon} {tab.label}{sportCounts[tab.key] > 0 && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>({sportCounts[tab.key]})</span>}
+        <div style={{ padding: '12px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          {tabs.map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ padding: '3px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', border: '1px solid var(--border)', background: activeTab === tab.key ? 'var(--black)' : 'transparent', color: activeTab === tab.key ? 'var(--white)' : 'var(--black)' }}>
+              {tab.icon} {tab.label}{count(tab.key) > 0 && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>({count(tab.key)})</span>}
             </button>
           ))}
-          {!sportsLoading && <span style={{ marginLeft: 'auto', fontSize: 11, color: '#888' }}>{filteredSports.length} events · ESPN</span>}
+          {!sportsLoading && !polyLoading && (
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: '#888' }}>{filteredItems.length} markets · ESPN + Polymarket</span>
+          )}
         </div>
-        {sportsLoading ? (
-          <div style={{ padding: 32, textAlign: 'center' }}>
-            <span className="text-label" style={{ fontSize: 10, color: '#bbb' }}>FETCHING LIVE SPORTS ODDS…</span>
-          </div>
-        ) : filteredSports.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center' }}>
-            <span className="text-label" style={{ fontSize: 10, color: '#bbb' }}>NO {sportTab.toUpperCase()} EVENTS RIGHT NOW — CHECK BACK SOON</span>
-          </div>
-        ) : (
-          <div style={{ padding: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, background: 'var(--border)' }}>
-            {filteredSports.map(e => <SportCard key={e.matchId} event={e} />)}
-          </div>
-        )}
-      </div>
-
-      {/* ── Elections, Culture & Markets (Polymarket) ── */}
-      <div style={{ borderTop: '1px solid var(--border)' }}>
-        <div style={{ padding: '12px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span className="text-label" style={{ fontSize: 9, background: '#6366f1', color: '#fff', padding: '2px 8px', marginRight: 4 }}>■ ELECTIONS · CULTURE · MARKETS</span>
-          {polyTabs.map(tab => (
-            <button key={tab.key} onClick={() => setPolyTab(tab.key)} style={{ padding: '3px 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer', border: '1px solid var(--border)', background: polyTab === tab.key ? 'var(--black)' : 'transparent', color: polyTab === tab.key ? 'var(--white)' : 'var(--black)' }}>
-              {tab.label}{polyCounts[tab.key] > 0 && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>({polyCounts[tab.key]})</span>}
-            </button>
-          ))}
-          {!polyLoading && <span style={{ marginLeft: 'auto', fontSize: 11, color: '#888' }}>{filteredPoly.length} markets · Polymarket</span>}
-        </div>
-        {polyLoading ? (
+        {(sportsLoading || polyLoading) ? (
           <div style={{ padding: 48, textAlign: 'center' }}>
             <span className="text-label" style={{ fontSize: 10, color: '#bbb' }}>FETCHING LIVE MARKETS…</span>
           </div>
+        ) : filteredItems.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center' }}>
+            <span className="text-label" style={{ fontSize: 10, color: '#bbb' }}>NO {activeTab.toUpperCase()} MARKETS RIGHT NOW — CHECK BACK SOON</span>
+          </div>
         ) : (
-          <div style={{ padding: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1, background: 'var(--border)' }}>
-            {filteredPoly.map(m => <PolyCard key={m.id} market={m} onClick={() => setSelected(m)} />)}
+          <div style={{ padding: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 1, background: 'var(--border)' }}>
+            {filteredItems.map(item =>
+              item.kind === 'sport'
+                ? <SportCard key={item.event.matchId} event={item.event} />
+                : <PolyCard  key={item.market.id} market={item.market} onClick={() => setSelected(item.market)} />
+            )}
           </div>
         )}
       </div>
