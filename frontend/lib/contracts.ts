@@ -8,8 +8,22 @@ import type { Network } from './sui-client';
 
 // ── Package + shared objects ──────────────────────────────────────────────────
 
+// Next.js only inlines NEXT_PUBLIC_* vars when accessed as literal keys.
+// Dynamic process.env[key] returns undefined in the browser, so we map explicitly.
+const ENV: Record<string, string> = {
+  NEXT_PUBLIC_TESTNET_PACKAGE_ID:              process.env.NEXT_PUBLIC_TESTNET_PACKAGE_ID              ?? '',
+  NEXT_PUBLIC_TESTNET_TREASURY_ID:             process.env.NEXT_PUBLIC_TESTNET_TREASURY_ID             ?? '',
+  NEXT_PUBLIC_TESTNET_ADMIN_CAP_ID:            process.env.NEXT_PUBLIC_TESTNET_ADMIN_CAP_ID            ?? '',
+  NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL:  process.env.NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL  ?? '',
+  NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL: process.env.NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL ?? '',
+  NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN:       process.env.NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN       ?? '',
+  NEXT_PUBLIC_MAINNET_PACKAGE_ID:              process.env.NEXT_PUBLIC_MAINNET_PACKAGE_ID              ?? '',
+  NEXT_PUBLIC_MAINNET_TREASURY_ID:             process.env.NEXT_PUBLIC_MAINNET_TREASURY_ID             ?? '',
+  NEXT_PUBLIC_MAINNET_ADMIN_CAP_ID:            process.env.NEXT_PUBLIC_MAINNET_ADMIN_CAP_ID            ?? '',
+};
+
 function envOrEmpty(key: string): string {
-  return (typeof process !== 'undefined' && process.env[key]) ? process.env[key]! : '';
+  return ENV[key] ?? '';
 }
 
 export function getPackageId(network: Network = 'testnet'): string {
