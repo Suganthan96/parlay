@@ -7,6 +7,45 @@
 
 ---
 
+## Deployments
+
+### Sui Mainnet
+
+**Live:** 14 tickets minted, 4.131 SUI in the Treasury (as of Nov 9 2026).
+
+| Object | ID / Hash |
+|---|---|
+| Package | [`0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d`](https://suivision.xyz/object/0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d) |
+| Publish transaction | [`8m7SEHjCwgs2z9N4TKiLPUz4SaBebAGFpbx3CF8VjAXR`](https://suivision.xyz/txblock/8m7SEHjCwgs2z9N4TKiLPUz4SaBebAGFpbx3CF8VjAXR) |
+| Treasury (shared) | [`0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684`](https://suivision.xyz/object/0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684) |
+| AdminCap | [`0xf14ec005124e0384a993eea01ca801ebc4f91281bb33f396a4046b1f5e2cc03a`](https://suivision.xyz/object/0xf14ec005124e0384a993eea01ca801ebc4f91281bb33f396a4046b1f5e2cc03a) |
+| UpgradeCap | [`0x7b2eeff3508cf9fe59811026d04e29f9fdf5ca987109fb181f3bf9376c3abe21`](https://suivision.xyz/object/0x7b2eeff3508cf9fe59811026d04e29f9fdf5ca987109fb181f3bf9376c3abe21) |
+| Market: Man City vs Arsenal | [`0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a`](https://suivision.xyz/object/0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a) |
+| Market: Real Madrid vs Liverpool | [`0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f`](https://suivision.xyz/object/0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f) |
+| Market: PSG vs Bayern | [`0x3a1a25fedef1c20923b958ed5adb7f97d560daaf5b846c80e4be97334d47fcc0`](https://suivision.xyz/object/0x3a1a25fedef1c20923b958ed5adb7f97d560daaf5b846c80e4be97334d47fcc0) |
+| Example Ticket NFT (3-leg NFL) | [`0x0a6a14af73f288b3532118d78692843f7cf88a20b1aa8243fa1d2d4b4b663b29`](https://suivision.xyz/object/0x0a6a14af73f288b3532118d78692843f7cf88a20b1aa8243fa1d2d4b4b663b29) |
+| Example ticket mint transaction | [`Ha6gjGeiEn7Tp9n9sYKdA3ZbKfqcgmmLTd2Fizkmki4x`](https://suivision.xyz/txblock/Ha6gjGeiEn7Tp9n9sYKdA3ZbKfqcgmmLTd2Fizkmki4x) |
+| Example ticket receipt (Walrus blob) | `dB3SeScRrUnKAlsi1h4xTQT_DTK8xE8ABt7WB83C7u4` |
+
+### Sui Testnet
+
+| Object | ID / Hash |
+|---|---|
+| Package | [`0x7810ac542cec4e99fb29ddcbb8aa361812c8841fb46c30809434e24f583b6351`](https://testnet.suivision.xyz/object/0x7810ac542cec4e99fb29ddcbb8aa361812c8841fb46c30809434e24f583b6351) |
+| Publish transaction | [`J1L2YgCmD8o6UjgR85zF1jatFCMsP1QZYNuc2baHpG6T`](https://testnet.suivision.xyz/txblock/J1L2YgCmD8o6UjgR85zF1jatFCMsP1QZYNuc2baHpG6T) |
+| Treasury (shared) | [`0x19b88bdad470ce8c21db6b6472b9847a78c0a0b1b1eb9ca5a9f554ef3776d705`](https://testnet.suivision.xyz/object/0x19b88bdad470ce8c21db6b6472b9847a78c0a0b1b1eb9ca5a9f554ef3776d705) |
+| AdminCap | [`0x1fc665e69211af8554bd1a02c1a92d622647bd1311fcfa5b263a6821ff4c400e`](https://testnet.suivision.xyz/object/0x1fc665e69211af8554bd1a02c1a92d622647bd1311fcfa5b263a6821ff4c400e) |
+| UpgradeCap | [`0xf45721ed7fac454d8550cf7a3218ebcf809b127dc0d8a7ded69d4cbe18d3487b`](https://testnet.suivision.xyz/object/0xf45721ed7fac454d8550cf7a3218ebcf809b127dc0d8a7ded69d4cbe18d3487b) |
+| Market: Man City vs Arsenal | [`0xead2ba602ea1e787fea4237b2d580f850d6e9c20be359968db8a670486c2ac31`](https://testnet.suivision.xyz/object/0xead2ba602ea1e787fea4237b2d580f850d6e9c20be359968db8a670486c2ac31) |
+| Market: Real Madrid vs Liverpool | [`0xf09d6cb36dfdcb4c71c6d97701249b0b2cbf12e2e58930292fe357155f9d42fe`](https://testnet.suivision.xyz/object/0xf09d6cb36dfdcb4c71c6d97701249b0b2cbf12e2e58930292fe357155f9d42fe) |
+| Market: PSG vs Bayern | [`0x4032e307eb41a1de2888818646656b6bde6f0333a712535fa8d2150ef3579d99`](https://testnet.suivision.xyz/object/0x4032e307eb41a1de2888818646656b6bde6f0333a712535fa8d2150ef3579d99) |
+
+### Walrus Memory (MemWal)
+
+Memories visible at [memory.walrus.xyz](https://memory.walrus.xyz) under account `0xc6d6741ab42991fbab9b2ef91727f023b947457058a543d021f9f77f015d24d9`.
+
+---
+
 ## What is a Parlay?
 
 A **parlay** is a single bet made of several legs. Every leg must win. The payout multiplies across all legs — but one losing leg kills the whole ticket.
@@ -821,45 +860,6 @@ npm run start
 # Streams MarketResolved events via Tatum gRPC
 # Resolves markets, writes to Walrus Memory
 ```
-
----
-
-## Deployments
-
-### Sui Mainnet
-
-**Live:** 14 tickets minted, 4.131 SUI in the Treasury (as of Nov 9 2026).
-
-| Object | ID / Hash |
-|---|---|
-| Package | [`0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d`](https://suivision.xyz/object/0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d) |
-| Publish transaction | [`8m7SEHjCwgs2z9N4TKiLPUz4SaBebAGFpbx3CF8VjAXR`](https://suivision.xyz/txblock/8m7SEHjCwgs2z9N4TKiLPUz4SaBebAGFpbx3CF8VjAXR) |
-| Treasury (shared) | [`0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684`](https://suivision.xyz/object/0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684) |
-| AdminCap | [`0xf14ec005124e0384a993eea01ca801ebc4f91281bb33f396a4046b1f5e2cc03a`](https://suivision.xyz/object/0xf14ec005124e0384a993eea01ca801ebc4f91281bb33f396a4046b1f5e2cc03a) |
-| UpgradeCap | [`0x7b2eeff3508cf9fe59811026d04e29f9fdf5ca987109fb181f3bf9376c3abe21`](https://suivision.xyz/object/0x7b2eeff3508cf9fe59811026d04e29f9fdf5ca987109fb181f3bf9376c3abe21) |
-| Market: Man City vs Arsenal | [`0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a`](https://suivision.xyz/object/0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a) |
-| Market: Real Madrid vs Liverpool | [`0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f`](https://suivision.xyz/object/0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f) |
-| Market: PSG vs Bayern | [`0x3a1a25fedef1c20923b958ed5adb7f97d560daaf5b846c80e4be97334d47fcc0`](https://suivision.xyz/object/0x3a1a25fedef1c20923b958ed5adb7f97d560daaf5b846c80e4be97334d47fcc0) |
-| Example Ticket NFT (3-leg NFL) | [`0x0a6a14af73f288b3532118d78692843f7cf88a20b1aa8243fa1d2d4b4b663b29`](https://suivision.xyz/object/0x0a6a14af73f288b3532118d78692843f7cf88a20b1aa8243fa1d2d4b4b663b29) |
-| Example ticket mint transaction | [`Ha6gjGeiEn7Tp9n9sYKdA3ZbKfqcgmmLTd2Fizkmki4x`](https://suivision.xyz/txblock/Ha6gjGeiEn7Tp9n9sYKdA3ZbKfqcgmmLTd2Fizkmki4x) |
-| Example ticket receipt (Walrus blob) | `dB3SeScRrUnKAlsi1h4xTQT_DTK8xE8ABt7WB83C7u4` |
-
-### Sui Testnet
-
-| Object | ID / Hash |
-|---|---|
-| Package | [`0x7810ac542cec4e99fb29ddcbb8aa361812c8841fb46c30809434e24f583b6351`](https://testnet.suivision.xyz/object/0x7810ac542cec4e99fb29ddcbb8aa361812c8841fb46c30809434e24f583b6351) |
-| Publish transaction | [`J1L2YgCmD8o6UjgR85zF1jatFCMsP1QZYNuc2baHpG6T`](https://testnet.suivision.xyz/txblock/J1L2YgCmD8o6UjgR85zF1jatFCMsP1QZYNuc2baHpG6T) |
-| Treasury (shared) | [`0x19b88bdad470ce8c21db6b6472b9847a78c0a0b1b1eb9ca5a9f554ef3776d705`](https://testnet.suivision.xyz/object/0x19b88bdad470ce8c21db6b6472b9847a78c0a0b1b1eb9ca5a9f554ef3776d705) |
-| AdminCap | [`0x1fc665e69211af8554bd1a02c1a92d622647bd1311fcfa5b263a6821ff4c400e`](https://testnet.suivision.xyz/object/0x1fc665e69211af8554bd1a02c1a92d622647bd1311fcfa5b263a6821ff4c400e) |
-| UpgradeCap | [`0xf45721ed7fac454d8550cf7a3218ebcf809b127dc0d8a7ded69d4cbe18d3487b`](https://testnet.suivision.xyz/object/0xf45721ed7fac454d8550cf7a3218ebcf809b127dc0d8a7ded69d4cbe18d3487b) |
-| Market: Man City vs Arsenal | [`0xead2ba602ea1e787fea4237b2d580f850d6e9c20be359968db8a670486c2ac31`](https://testnet.suivision.xyz/object/0xead2ba602ea1e787fea4237b2d580f850d6e9c20be359968db8a670486c2ac31) |
-| Market: Real Madrid vs Liverpool | [`0xf09d6cb36dfdcb4c71c6d97701249b0b2cbf12e2e58930292fe357155f9d42fe`](https://testnet.suivision.xyz/object/0xf09d6cb36dfdcb4c71c6d97701249b0b2cbf12e2e58930292fe357155f9d42fe) |
-| Market: PSG vs Bayern | [`0x4032e307eb41a1de2888818646656b6bde6f0333a712535fa8d2150ef3579d99`](https://testnet.suivision.xyz/object/0x4032e307eb41a1de2888818646656b6bde6f0333a712535fa8d2150ef3579d99) |
-
-### Walrus Memory (MemWal)
-
-Memories visible at [memory.walrus.xyz](https://memory.walrus.xyz) under account `0xc6d6741ab42991fbab9b2ef91727f023b947457058a543d021f9f77f015d24d9`.
 
 ---
 
