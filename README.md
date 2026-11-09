@@ -7,28 +7,6 @@
 
 ---
 
-## Contents
-
-1. [What is a Parlay?](#what-is-a-parlay)
-2. [The Problem](#the-problem)
-3. [The Solution](#the-solution)
-4. [How it Fits the Track](#how-it-fits-the-track)
-5. [Economics: Where the Money Comes From](#economics-where-the-money-comes-from)
-6. [House Treasury Model](#house-treasury-model)
-7. [Liquidity Pool Model (Production Path)](#liquidity-pool-model-production-path)
-8. [Architecture](#architecture)
-9. [How Tatum is Used](#how-tatum-is-used)
-10. [How Walrus is Used](#how-walrus-is-used)
-11. [The Trust and Credibility System](#the-trust-and-credibility-system)
-12. [Move Contracts](#move-contracts)
-13. [Walrus Memory Schema](#walrus-memory-schema)
-14. [Repository Layout](#repository-layout)
-15. [Running it Locally](#running-it-locally)
-16. [Deployments](#deployments)
-17. [Environment Variables](#environment-variables)
-
----
-
 ## What is a Parlay?
 
 A **parlay** is a single bet made of several legs. Every leg must win. The payout multiplies across all legs — but one losing leg kills the whole ticket.
@@ -52,21 +30,81 @@ Parlays are the most popular bet type at every sportsbook in the world. They hav
 
 ## The Problem
 
-1. **Parlays are opaque and unfair.** Sportsbooks set margins in the dark, limit winning accounts, and can close you down. No one can verify how the price was built.
-2. **On-chain single-pick markets ignore multi-leg betting.** Polymarket, Kalshi, and every on-chain prediction market only do one question at a time. There is no on-chain parlay.
-3. **Nobody tracks who was actually right.** Pick journals are off-chain, unverifiable, and siloed. There is no persistent, cross-app credibility record.
-4. **Trust is invisible.** A sharp bettor who hits 65% on 3-leg parlays and a lucky amateur who got one right look identical. The app cannot learn who to trust.
+**On Polymarket, every call is its own bet.** Three picks means three stakes, three wallet signatures, and no combined payout. Picks at 2.05×, 2.79× and 2.21× stay three separate bets, when together they should pay **12.64×**.
+
+**Sportsbooks instead?** They are the only place parlays exist today, and:
+
+- **They hold your money.** Custodial accounts, withdrawals on their terms.
+- **They hide the odds.** The margin is built in the dark; no one can verify how a price was made.
+- **They keep your history.** Your picks and results sit in their database, not with you.
+- **Win too often? They limit you.** Sharp bettors get capped or closed.
+
+None of it is on-chain, and nobody keeps a verifiable record of who was actually right.
 
 ---
 
 ## The Solution
 
-| Problem | What Parlay Markets does |
-|---|---|
-| Opaque pricing | LMSR contracts compute every leg price on-chain. Parlay price = `Π(leg prices) × 1.10`, quotable before you buy — no hidden margin. |
-| No on-chain parlay | Multi-leg ticket minted as a Sui owned object. Combined odds, escrow, cash-out and claim all on-chain. |
-| No verifiable pick record | Every parlay commitment is written to **Walrus Memory** before kickoff. Blob ID is stored in the ticket object. The record is permanent and cross-app. |
-| Invisible credibility | Walrus Memory learns leg win rates per user via `analyze()`. The parlay builder shows a credibility badge on each leg. The leaderboard ranks users by hit rate. |
+**One ticket.** Parlay Markets is the first parlay market on Sui: stack 2–5 picks into one on-chain ticket, with one stake and one signature, and the odds multiply.
+
+| | Polymarket | Sportsbook | **Parlay Markets** |
+|---|---|---|---|
+| Legs per bet | 1 | 2+ | **2–5** |
+| Wallet confirms for 3 picks | 3 | — (custodial) | **1** |
+| Payout if all 3 win | 3 separate | combined | **12.64× combined** |
+| Who holds the stake | you | the book | **a public Sui treasury** |
+| Odds | its own book | hidden margin | **Tatum · ESPN · Polymarket, quoted before you buy** |
+| Your pick history | trade log | their database | **Walrus Memory, SEAL-encrypted, yours** |
+| The ticket | — | a row in their DB | **an NFT on Sui, receipt on Walrus** |
+| Winning too often | — | limited | **the contract can't ban you** |
+
+- **Tatum** powers every read: Sui RPC, the live SUI→USD rate, and prediction odds.
+- **Walrus** keeps the receipt: the ticket JSON is a Walrus blob, and its blob ID is written into the NFT.
+- **Walrus Memory** remembers every pick and outcome, encrypted with SEAL, so only your key can recall it.
+
+---
+
+## How it Works
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Bettor
+    participant A as Parlay Markets (Next.js)
+    participant D as ESPN · Polymarket
+    participant T as Tatum (Sui RPC · Rates · Predictions)
+    participant W as Walrus (publisher / aggregator)
+    participant K as Sui Wallet
+    participant S as Sui Move (parlay_router · parlay_vault)
+    participant M as Walrus Memory (MemWal relayer · SEAL)
+
+    U->>A: Open the markets page
+    A->>D: Fetch live games and prediction markets
+    A->>T: Prediction odds and SUI→USD rate
+    U->>A: Pick 2–5 legs and set a stake
+    A->>T: Read the Treasury balance (house limit)
+    T-->>A: Max payout the treasury can cover
+    A->>W: PUT ticket receipt JSON
+    W-->>A: blobId
+    A->>K: buy_parlay(legs, outcomes, stake, blobId)
+    U->>K: Approve one transaction
+    K->>S: parlay_router::buy_parlay
+    S->>S: parlay_vault::mint_ticket → Ticket NFT, stake → Treasury
+    S-->>A: tx digest and Ticket ID
+    A->>M: remember(pick, "picks")
+    M-->>A: Encrypted memory blob ID
+
+    Note over A,S: After the games resolve
+    A->>S: /api/settle-ticket → settle_won / settle_lost
+    A->>M: remember(outcome, "outcomes")
+    U->>K: Claim winnings
+    K->>S: parlay_vault::claim → payout from Treasury
+
+    U->>A: Open My Tickets
+    A->>T: Read owned Ticket NFTs
+    A->>W: Fetch the receipt by blobId
+    A->>M: recall(history, "picks")
+```
 
 ---
 
@@ -790,14 +828,36 @@ npm run start
 
 ### Sui Mainnet
 
-| Object | ID |
-|---|---|
-| Package | _(after deploy)_ |
-| Treasury | _(after deploy)_ |
-| PredictionMarket: MCI vs ARS | _(after deploy)_ |
-| PredictionMarket: LIV vs CHE | _(after deploy)_ |
+**Live:** 14 tickets minted, 4.131 SUI in the Treasury (as of Nov 9 2026).
 
-### Walrus Mainnet (MemWal)
+| Object | ID / Hash |
+|---|---|
+| Package | [`0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d`](https://suivision.xyz/object/0x9706b4bf932a2e4e27e858ea562262abe001db18121c0fd3afc6f16537f8de1d) |
+| Publish transaction | [`8m7SEHjCwgs2z9N4TKiLPUz4SaBebAGFpbx3CF8VjAXR`](https://suivision.xyz/txblock/8m7SEHjCwgs2z9N4TKiLPUz4SaBebAGFpbx3CF8VjAXR) |
+| Treasury (shared) | [`0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684`](https://suivision.xyz/object/0xac9d1b3282e65b9ab1c185ac5a825458a357eaaba4b546808e66e7873110e684) |
+| AdminCap | [`0xf14ec005124e0384a993eea01ca801ebc4f91281bb33f396a4046b1f5e2cc03a`](https://suivision.xyz/object/0xf14ec005124e0384a993eea01ca801ebc4f91281bb33f396a4046b1f5e2cc03a) |
+| UpgradeCap | [`0x7b2eeff3508cf9fe59811026d04e29f9fdf5ca987109fb181f3bf9376c3abe21`](https://suivision.xyz/object/0x7b2eeff3508cf9fe59811026d04e29f9fdf5ca987109fb181f3bf9376c3abe21) |
+| Market: Man City vs Arsenal | [`0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a`](https://suivision.xyz/object/0xee6bca2cf833139daba5e2041ad205e2f91590219690d933b5dc74a0168e117a) |
+| Market: Real Madrid vs Liverpool | [`0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f`](https://suivision.xyz/object/0xacb7bb61447eca9538e4676ec462e5031b5101ac4788a7de7ddefddfc3548b6f) |
+| Market: PSG vs Bayern | [`0x3a1a25fedef1c20923b958ed5adb7f97d560daaf5b846c80e4be97334d47fcc0`](https://suivision.xyz/object/0x3a1a25fedef1c20923b958ed5adb7f97d560daaf5b846c80e4be97334d47fcc0) |
+| Example Ticket NFT (3-leg NFL) | [`0x0a6a14af73f288b3532118d78692843f7cf88a20b1aa8243fa1d2d4b4b663b29`](https://suivision.xyz/object/0x0a6a14af73f288b3532118d78692843f7cf88a20b1aa8243fa1d2d4b4b663b29) |
+| Example ticket mint transaction | [`Ha6gjGeiEn7Tp9n9sYKdA3ZbKfqcgmmLTd2Fizkmki4x`](https://suivision.xyz/txblock/Ha6gjGeiEn7Tp9n9sYKdA3ZbKfqcgmmLTd2Fizkmki4x) |
+| Example ticket receipt (Walrus blob) | `dB3SeScRrUnKAlsi1h4xTQT_DTK8xE8ABt7WB83C7u4` |
+
+### Sui Testnet
+
+| Object | ID / Hash |
+|---|---|
+| Package | [`0x7810ac542cec4e99fb29ddcbb8aa361812c8841fb46c30809434e24f583b6351`](https://testnet.suivision.xyz/object/0x7810ac542cec4e99fb29ddcbb8aa361812c8841fb46c30809434e24f583b6351) |
+| Publish transaction | [`J1L2YgCmD8o6UjgR85zF1jatFCMsP1QZYNuc2baHpG6T`](https://testnet.suivision.xyz/txblock/J1L2YgCmD8o6UjgR85zF1jatFCMsP1QZYNuc2baHpG6T) |
+| Treasury (shared) | [`0x19b88bdad470ce8c21db6b6472b9847a78c0a0b1b1eb9ca5a9f554ef3776d705`](https://testnet.suivision.xyz/object/0x19b88bdad470ce8c21db6b6472b9847a78c0a0b1b1eb9ca5a9f554ef3776d705) |
+| AdminCap | [`0x1fc665e69211af8554bd1a02c1a92d622647bd1311fcfa5b263a6821ff4c400e`](https://testnet.suivision.xyz/object/0x1fc665e69211af8554bd1a02c1a92d622647bd1311fcfa5b263a6821ff4c400e) |
+| UpgradeCap | [`0xf45721ed7fac454d8550cf7a3218ebcf809b127dc0d8a7ded69d4cbe18d3487b`](https://testnet.suivision.xyz/object/0xf45721ed7fac454d8550cf7a3218ebcf809b127dc0d8a7ded69d4cbe18d3487b) |
+| Market: Man City vs Arsenal | [`0xead2ba602ea1e787fea4237b2d580f850d6e9c20be359968db8a670486c2ac31`](https://testnet.suivision.xyz/object/0xead2ba602ea1e787fea4237b2d580f850d6e9c20be359968db8a670486c2ac31) |
+| Market: Real Madrid vs Liverpool | [`0xf09d6cb36dfdcb4c71c6d97701249b0b2cbf12e2e58930292fe357155f9d42fe`](https://testnet.suivision.xyz/object/0xf09d6cb36dfdcb4c71c6d97701249b0b2cbf12e2e58930292fe357155f9d42fe) |
+| Market: PSG vs Bayern | [`0x4032e307eb41a1de2888818646656b6bde6f0333a712535fa8d2150ef3579d99`](https://testnet.suivision.xyz/object/0x4032e307eb41a1de2888818646656b6bde6f0333a712535fa8d2150ef3579d99) |
+
+### Walrus Memory (MemWal)
 
 Memories visible at [memory.walrus.xyz](https://memory.walrus.xyz) under account `0xc6d6741ab42991fbab9b2ef91727f023b947457058a543d021f9f77f015d24d9`.
 
@@ -806,9 +866,9 @@ Memories visible at [memory.walrus.xyz](https://memory.walrus.xyz) under account
 ## Environment Variables
 
 ```bash
-# Tatum
-TATUM_API_KEY=t-6a23c4927e64820132610c33-3e2ffe44a07b40bb9cda53a9        # testnet
-# TATUM_API_KEY=t-6a18740c98b58da41d4fd2f8-6cb1a5c66d2e4e649fd72067      # mainnet
+# Tatum (from dashboard.tatum.io; never commit real keys)
+TATUM_TESTNET_KEY=
+TATUM_MAINNET_KEY=
 
 # Sui
 NEXT_PUBLIC_SUI_NETWORK=testnet
