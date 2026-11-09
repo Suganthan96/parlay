@@ -264,11 +264,15 @@ export default function MarketsPage() {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  // Build unified feed — sports first, then poly
-  const allItems: FeedItem[] = [
-    ...sports.map(e => ({ kind: 'sport' as const, event: e })),
-    ...polymarkets.map(m => ({ kind: 'poly' as const, market: m })),
-  ];
+  // Interleave sports and polymarkets so cards mix throughout the grid
+  const sportItems  = sports.map(e => ({ kind: 'sport' as const, event: e }));
+  const polyItems   = polymarkets.map(m => ({ kind: 'poly' as const, market: m }));
+  const allItems: FeedItem[] = [];
+  const max = Math.max(sportItems.length, polyItems.length);
+  for (let i = 0; i < max; i++) {
+    if (i < sportItems.length) allItems.push(sportItems[i]);
+    if (i < polyItems.length)  allItems.push(polyItems[i]);
+  }
 
   const filteredItems: FeedItem[] = activeTab === 'all' ? allItems : allItems.filter(item => {
     if (item.kind === 'sport') return item.event.sport === activeTab;
