@@ -67,7 +67,6 @@ export default function BuyParlayButton({
 
   let label = stakeLabel ? stakeLabel.toUpperCase() + ' →' : 'BUY PARLAY →';
   if (!isConnected)       label = 'CONNECT WALLET →';
-  else if (!hasOnChain)   label = 'ADD ON-CHAIN LEGS';
   else if (stakeSui <= 0) label = 'ENTER STAKE AMOUNT';
   else if (isPending)     label = 'CONFIRM IN WALLET…';
   else if (isSuccess)     label = '✓ TICKET MINTED!';

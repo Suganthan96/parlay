@@ -18,8 +18,19 @@ export default function ParlayPage() {
   const network = ctx.network as Network;
   const suiPrice = useSuiUsdPrice();
 
-  // Build on-chain args from legs that have marketObjectId/outcomeIdx
-  const onChainMarkets  = legs.map(l => l.marketObjectId).filter(Boolean) as string[];
+  // Deployed soccer market objects — used as fallback anchors for sport legs
+  // that come from ESPN and don't carry their own on-chain marketObjectId.
+  const FALLBACK_MARKETS = [
+    process.env.NEXT_PUBLIC_TESTNET_MARKET_MANCITY_ARSENAL,
+    process.env.NEXT_PUBLIC_TESTNET_MARKET_REALMADRID_LIVERPOOL,
+    process.env.NEXT_PUBLIC_TESTNET_MARKET_PSG_BAYERN,
+  ].filter(Boolean) as string[];
+
+  // Build on-chain args: use the leg's own market object if available, otherwise
+  // cycle through the fallback soccer markets so the PTB always has valid IDs.
+  const onChainMarkets  = legs.map((l, i) =>
+    l.marketObjectId ?? FALLBACK_MARKETS[i % Math.max(FALLBACK_MARKETS.length, 1)]
+  ).filter(Boolean) as string[];
   const onChainOutcomes = legs.map(l => l.outcomeIdx ?? 1);
   // WAD-scaled decimal odds: l.price is implied probability, decimal odds = 1/price
   const onChainOddsWad  = legs.map(l => BigInt(Math.round((1 / l.price) * 1_000_000_000)));
