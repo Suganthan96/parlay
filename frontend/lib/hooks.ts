@@ -137,14 +137,20 @@ export function useBuyParlay() {
       const stakeMist     = suiToMist(stakeSui);
       const minPayoutMist = suiToMist(minPayoutSui);
 
-      // 1. Store ticket metadata on Walrus
-      const { blobIdBytes } = await storeTicketMeta({
-        legs,
-        stakeSui,
-        payoutSui: minPayoutSui,
-        buyerAddress: account.address,
-        purchasedAt:  new Date().toISOString(),
-      });
+      // 1. Store ticket metadata on Walrus (non-fatal — PTB proceeds with empty blob if unreachable)
+      let blobIdBytes: number[] = [];
+      try {
+        const walrusResult = await storeTicketMeta({
+          legs,
+          stakeSui,
+          payoutSui: minPayoutSui,
+          buyerAddress: account.address,
+          purchasedAt:  new Date().toISOString(),
+        });
+        blobIdBytes = walrusResult.blobIdBytes;
+      } catch (walrusErr) {
+        console.warn('Walrus store unavailable, continuing without blob:', walrusErr);
+      }
 
       // 2. Build PTB matching new router signature:
       //    buy_parlay(market_ids: vector<address>, odds_wad: vector<u64>,
