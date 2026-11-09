@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: { typedRoutes: false },
+  typedRoutes: false,
   webpack(config) {
     // @coinbase/cdp-sdk (pulled in by @base-org/account → baseAccount wagmi connector)
     // has optional x402 peer deps that aren't installed. We don't use the Base Account
