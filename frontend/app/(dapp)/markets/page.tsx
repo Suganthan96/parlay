@@ -21,6 +21,16 @@ const SPORT_LABEL: Record<string, string> = {
 
 // ── Sport event card ───────────────────────────────────────────────────────────
 
+function TeamLogo({ src, name }: { src?: string; name: string }) {
+  const initials = name.split(' ').slice(-1)[0]?.slice(0, 3).toUpperCase() ?? '?';
+  if (!src) return (
+    <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#888', flexShrink: 0 }}>
+      {initials}
+    </div>
+  );
+  return <img src={src} alt={name} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, flexShrink: 0, background: '#f8f8f8' }} />;
+}
+
 function SportCard({ event }: { event: SportEvent }) {
   const { addLeg, hasMarket } = useParlayStore();
   const inHome = hasMarket(`${event.matchId}-home`);
@@ -42,9 +52,16 @@ function SportCard({ event }: { event: SportEvent }) {
         <span style={{ fontSize: 9, fontWeight: 800, color: statusColor, letterSpacing: '0.08em' }}>■ {statusText}</span>
       </div>
       <div style={{ padding: '20px 16px', flex: 1 }}>
-        <p style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.3, marginBottom: 16 }}>
-          {event.homeTeam} vs {event.awayTeam}
-        </p>
+        {/* Team logos row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <TeamLogo src={event.homeLogo} name={event.homeTeam} />
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.3, margin: 0 }}>
+              {event.homeTeam} vs {event.awayTeam}
+            </p>
+          </div>
+          <TeamLogo src={event.awayLogo} name={event.awayTeam} />
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <button
             onClick={() => addLeg({

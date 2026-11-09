@@ -11,6 +11,8 @@ export interface SportEvent {
   league:     string;
   homeTeam:   string;
   awayTeam:   string;
+  homeLogo?:  string;
+  awayLogo?:  string;
   homeOdds:   number;  // decimal odds e.g. 1.75
   awayOdds:   number;
   kickoff:    number;  // unix seconds
@@ -93,6 +95,8 @@ function parseEvents(
       league,
       homeTeam: home.team?.displayName ?? 'Home',
       awayTeam: away.team?.displayName ?? 'Away',
+      homeLogo: home.team?.logo ?? undefined,
+      awayLogo: away.team?.logo ?? undefined,
       homeOdds,
       awayOdds,
       kickoff:  Math.floor(kickoffMs / 1000),
@@ -125,10 +129,12 @@ export async function GET() {
     if (comps.length < 2) continue;
     const a = comps[0];
     const b = comps[1];
-    const nameA = a.athlete?.displayName ?? a.team?.displayName ?? 'Fighter A';
-    const nameB = b.athlete?.displayName ?? b.team?.displayName ?? 'Fighter B';
-    const recA  = (a.records ?? []).find((r: any) => r.type === 'total')?.summary ?? '0-0';
-    const recB  = (b.records ?? []).find((r: any) => r.type === 'total')?.summary ?? '0-0';
+    const nameA  = a.athlete?.displayName ?? a.team?.displayName ?? 'Fighter A';
+    const nameB  = b.athlete?.displayName ?? b.team?.displayName ?? 'Fighter B';
+    const logoA  = a.athlete?.headshot?.href ?? a.team?.logo ?? undefined;
+    const logoB  = b.athlete?.headshot?.href ?? b.team?.logo ?? undefined;
+    const recA   = (a.records ?? []).find((r: any) => r.type === 'total')?.summary ?? '0-0';
+    const recB   = (b.records ?? []).find((r: any) => r.type === 'total')?.summary ?? '0-0';
     const { homeOdds: oddsA, awayOdds: oddsB } = computeOdds(recA, recB);
     mma.push({
       matchId:  `mma-${e.id}`,
@@ -136,6 +142,8 @@ export async function GET() {
       league:   'UFC',
       homeTeam: nameA,
       awayTeam: nameB,
+      homeLogo: logoA,
+      awayLogo: logoB,
       homeOdds: oddsA,
       awayOdds: oddsB,
       kickoff:  Math.floor(new Date(e.date ?? Date.now()).getTime() / 1000),
