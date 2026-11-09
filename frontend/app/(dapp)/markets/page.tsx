@@ -9,6 +9,59 @@ import type { PolyMarket } from '@/app/api/polymarkets/route';
 import type { SportEvent } from '@/app/api/sports/route';
 import type { Network } from '@/lib/sui-client';
 
+// ── Seeded sparkline chart ────────────────────────────────────────────────────
+
+function seededRand(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
+  return () => { h ^= h << 13; h ^= h >> 17; h ^= h << 5; return (h >>> 0) / 0xffffffff; };
+}
+
+function SparkChart({ value, seed, color = '#00dc82', label = '30D TREND' }: { value: number; seed: string; color?: string; label?: string }) {
+  const rand = seededRand(seed);
+  const pts: number[] = [];
+  let v = 0.5;
+  for (let i = 0; i < 30; i++) {
+    const t = i / 29;
+    const target = 0.5 + (value - 0.5) * Math.pow(t, 1.5);
+    v = v * 0.65 + target * 0.35 + (rand() - 0.5) * 0.08;
+    v = Math.max(0.02, Math.min(0.98, v));
+    pts.push(v);
+  }
+  pts[pts.length - 1] = value;
+  const W = 400, H = 72;
+  const x = (i: number) => (i / 29) * W;
+  const y = (p: number) => H - p * H;
+  const linePts = pts.map((p, i) => `${x(i)},${y(p)}`).join(' ');
+  const lineD = `M ${pts.map((p, i) => `${x(i)} ${y(p)}`).join(' L ')}`;
+  const areaD = `${lineD} L ${W} ${H} L 0 ${H} Z`;
+  const gradId = `sg-${seed.replace(/\W/g,'').slice(0,8)}`;
+  const startVal = pts[0];
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, alignItems: 'center' }}>
+        <span style={{ fontSize: 9, fontWeight: 800, color: '#555', letterSpacing: '0.1em' }}>{label}</span>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <span style={{ fontSize: 10, color: '#555' }}>30d ago <span style={{ color: '#888', fontWeight: 700 }}>{(startVal*100).toFixed(0)}%</span></span>
+          <span style={{ fontSize: 10, color: '#555' }}>now <span style={{ color, fontWeight: 700 }}>{(value*100).toFixed(0)}%</span></span>
+        </div>
+      </div>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block', height: 72, borderRadius: 2 }}>
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill={`url(#${gradId})`} />
+        <polyline points={linePts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" />
+        <circle cx={x(29)} cy={y(value)} r="3.5" fill={color} />
+      </svg>
+    </div>
+  );
+}
+
 // ── Sport icon map ─────────────────────────────────────────────────────────────
 
 const SPORT_ICON: Record<string, string> = {
@@ -60,6 +113,7 @@ function SportDetailModal({ event, onClose }: { event: SportEvent; onClose: () =
             <div style={{ height: '100%', width: `${homeProb * 100}%`, background: 'linear-gradient(90deg,#00dc82,#00b87a)', transition: 'width 0.5s' }} />
             <div style={{ height: '100%', flex: 1, background: '#dc2626', opacity: 0.5 }} />
           </div>
+          <SparkChart value={homeProb} seed={event.matchId} color="#00dc82" label="HOME WIN PROBABILITY · SEASON TREND" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button
               onClick={() => { addLeg({ marketId: `${event.matchId}-home`, marketLabel: `${event.homeTeam} vs ${event.awayTeam}`, outcome: `${event.homeTeam} Win`, price: homeProb, marketObjectId: event.suiObjectId, outcomeIdx: 1 }); onClose(); }}
@@ -182,6 +236,7 @@ function MarketDetailModal({ market, onClose }: { market: PolyMarket; onClose: (
             <div style={{ height: '100%', width: `${market.yesPrice * 100}%`, background: 'linear-gradient(90deg,#00dc82,#00b87a)', transition: 'width 0.5s' }} />
             <div style={{ height: '100%', flex: 1, background: '#dc2626', opacity: 0.5 }} />
           </div>
+          <SparkChart value={market.yesPrice} seed={market.id} color="#00dc82" label="YES PROBABILITY · 30D TREND" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button
               onClick={() => { addLeg({ marketId, marketLabel: market.question, outcome: 'YES', price: market.yesPrice }); onClose(); }}
