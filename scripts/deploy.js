@@ -14,16 +14,13 @@ const path         = require('path');
 // ── Config ────────────────────────────────────────────────────────────────────
 
 // Use full path so it works from Node even if /opt/homebrew/bin isn't in PATH
-const SUI = process.env.SUI_BIN ?? '/opt/homebrew/bin/sui';
+const SUI = process.env.SUI_BIN ?? '/tmp/sui-install/sui';
 
-const PRIVATE_KEY =
-  process.env.SUI_PRIVATE_KEY ??
-  'suiprivkey1qqvs8n2khyugu8nz7hsmcrdkxysvghas7n3m4n7kqdk5c22nj0r4uhznulp';
+const PRIVATE_KEY = process.env.SUI_PRIVATE_KEY;
+if (!PRIVATE_KEY) { console.error('Set SUI_PRIVATE_KEY env var'); process.exit(1); }
 
-const TATUM_TESTNET = process.env.TATUM_TESTNET_KEY ??
-  't-6a23c4927e64820132610c33-3e2ffe44a07b40bb9cda53a9';
-const TATUM_MAINNET = process.env.TATUM_MAINNET_KEY ??
-  't-6a18740c98b58da41d4fd2f8-6cb1a5c66d2e4e649fd72067';
+const TATUM_TESTNET = process.env.TATUM_TESTNET_KEY ?? '';
+const TATUM_MAINNET = process.env.TATUM_MAINNET_KEY ?? '';
 
 const NETWORK  = process.argv[2] ?? 'testnet';
 const TATUM_KEY = NETWORK === 'mainnet' ? TATUM_MAINNET : TATUM_TESTNET;

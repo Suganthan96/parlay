@@ -23,8 +23,9 @@ try {
   process.exit(1);
 }
 
-const MEMWAL_PRIVATE_KEY = 'e6431759ff51a1ef35f5d49ed7c705e159bd04dcef07d10b586c9d7372343f77';
-const MEMWAL_ACCOUNT_ID  = '0xc6d6741ab42991fbab9b2ef91727f023b947457058a543d021f9f77f015d24d9';
+const MEMWAL_PRIVATE_KEY = process.env.MEMWAL_PRIVATE_KEY ?? '';
+const MEMWAL_ACCOUNT_ID  = process.env.MEMWAL_ACCOUNT_ID  ?? '';
+if (!MEMWAL_PRIVATE_KEY) { console.error('Set MEMWAL_PRIVATE_KEY env var'); process.exit(1); }
 
 const MEMORIES = [
   { ns: 'protocol:rules',
