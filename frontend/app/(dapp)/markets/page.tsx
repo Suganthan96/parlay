@@ -21,87 +21,122 @@ const SPORT_LABEL: Record<string, string> = {
 
 // ── Sport event card ───────────────────────────────────────────────────────────
 
-function TeamLogo({ src, name }: { src?: string; name: string }) {
-  const initials = name.split(' ').slice(-1)[0]?.slice(0, 3).toUpperCase() ?? '?';
-  if (!src) return (
-    <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#888', flexShrink: 0 }}>
-      {initials}
-    </div>
-  );
-  return <img src={src} alt={name} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, flexShrink: 0, background: '#f8f8f8' }} />;
-}
+// ── Sport detail modal (mirrors MarketDetailModal) ────────────────────────────
 
-function SportCard({ event }: { event: SportEvent }) {
+function SportDetailModal({ event, onClose }: { event: SportEvent; onClose: () => void }) {
   const { addLeg, hasMarket } = useParlayStore();
   const inHome = hasMarket(`${event.matchId}-home`);
   const inAway = hasMarket(`${event.matchId}-away`);
   const homeProb = 1 / event.homeOdds;
   const awayProb = 1 / event.awayOdds;
-  const kicks = new Date(event.kickoff * 1000).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric',
-  });
+  const kicks = new Date(event.kickoff * 1000).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', width: '100%', maxWidth: 760, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 48px 96px rgba(0,0,0,0.8)' }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            {event.homeLogo && <img src={event.homeLogo} alt="" style={{ width: 48, height: 48, objectFit: 'contain', background: '#fff', padding: 4, borderRadius: 3, flexShrink: 0 }} />}
+            <div>
+              <p style={{ fontSize: 11, color: '#777', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>{SPORT_ICON[event.sport]} {SPORT_LABEL[event.sport]} · {kicks}</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.35 }}>{event.homeTeam} vs {event.awayTeam}</p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#777', cursor: 'pointer', fontSize: 22, lineHeight: 1, flexShrink: 0, padding: 4 }}>✕</button>
+        </div>
+        <div style={{ padding: 24 }}>
+          <div style={{ display: 'flex', gap: 32, marginBottom: 24, alignItems: 'center' }}>
+            {event.awayLogo && <img src={event.awayLogo} alt={event.awayTeam} style={{ width: 40, height: 40, objectFit: 'contain', background: '#fff', padding: 4, borderRadius: 3 }} />}
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 10, color: '#00dc82', fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>{event.homeTeam.toUpperCase()}</p>
+              <p style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.04em', color: '#00dc82', lineHeight: 1 }}>{(homeProb * 100).toFixed(0)}%</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 10, color: '#777', fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>{event.awayTeam.toUpperCase()}</p>
+              <p style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.04em', color: '#777', lineHeight: 1 }}>{(awayProb * 100).toFixed(0)}%</p>
+            </div>
+          </div>
+          <div style={{ height: 8, background: '#1a1a1a', borderRadius: 4, overflow: 'hidden', display: 'flex', marginBottom: 24 }}>
+            <div style={{ height: '100%', width: `${homeProb * 100}%`, background: 'linear-gradient(90deg,#00dc82,#00b87a)', transition: 'width 0.5s' }} />
+            <div style={{ height: '100%', flex: 1, background: '#dc2626', opacity: 0.5 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              onClick={() => { addLeg({ marketId: `${event.matchId}-home`, marketLabel: `${event.homeTeam} vs ${event.awayTeam}`, outcome: `${event.homeTeam} Win`, price: homeProb, marketObjectId: event.suiObjectId, outcomeIdx: 1 }); onClose(); }}
+              disabled={inHome || event.status === 'final'}
+              style={{ width: '100%', padding: 16, background: inHome ? '#00dc8215' : '#00dc82', color: inHome ? '#00dc82' : '#000', border: inHome ? '1px solid #00dc8244' : 'none', cursor: (inHome || event.status === 'final') ? 'default' : 'pointer', fontWeight: 900, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+            >
+              {inHome ? `✓ ${event.homeTeam.toUpperCase()} IN PARLAY` : `+ ${event.homeTeam.toUpperCase()} WIN  ${(homeProb*100).toFixed(0)}%  →  ${event.homeOdds.toFixed(2)}×`}
+            </button>
+            <button
+              onClick={() => { addLeg({ marketId: `${event.matchId}-away`, marketLabel: `${event.homeTeam} vs ${event.awayTeam}`, outcome: `${event.awayTeam} Win`, price: awayProb, marketObjectId: event.suiObjectId, outcomeIdx: 2 }); onClose(); }}
+              disabled={inAway || event.status === 'final'}
+              style={{ width: '100%', padding: 16, background: 'transparent', color: inAway ? '#555' : '#ccc', border: `1px solid ${inAway ? '#1a1a1a' : '#2a2a2a'}`, cursor: (inAway || event.status === 'final') ? 'default' : 'pointer', fontWeight: 900, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+            >
+              {inAway ? `✓ ${event.awayTeam.toUpperCase()} IN PARLAY` : `+ ${event.awayTeam.toUpperCase()} WIN  ${(awayProb*100).toFixed(0)}%  →  ${event.awayOdds.toFixed(2)}×`}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Sport card — same visual style as PolyCard ────────────────────────────────
+
+function SportCard({ event, onClick }: { event: SportEvent; onClick: () => void }) {
+  const { hasMarket } = useParlayStore();
+  const inHome   = hasMarket(`${event.matchId}-home`);
+  const inAway   = hasMarket(`${event.matchId}-away`);
+  const inParlay = inHome || inAway;
+  const homeProb = 1 / event.homeOdds;
+  const awayProb = 1 / event.awayOdds;
+  const kicks    = new Date(event.kickoff * 1000).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const statusColor = event.status === 'in_progress' ? '#16a34a' : event.status === 'final' ? '#888' : '#f59e0b';
   const statusText  = event.status === 'in_progress' ? 'LIVE' : event.status === 'final' ? 'FINAL' : 'UPCOMING';
 
   return (
-    <div style={{ background: 'var(--white)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+    <div onClick={onClick} style={{ background: 'var(--white)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.12)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+    >
+      {/* Header */}
       <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span className="text-label" style={{ fontSize: 9, color: '#888' }}>
-          {SPORT_ICON[event.sport]} {SPORT_LABEL[event.sport]} · {kicks}
-        </span>
+        <span className="text-label" style={{ fontSize: 9, color: '#888' }}>{SPORT_ICON[event.sport]} {SPORT_LABEL[event.sport]} · {kicks}</span>
         <span style={{ fontSize: 9, fontWeight: 800, color: statusColor, letterSpacing: '0.08em' }}>■ {statusText}</span>
       </div>
-      <div style={{ padding: '20px 16px', flex: 1 }}>
-        {/* Team logos row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <TeamLogo src={event.homeLogo} name={event.homeTeam} />
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.3, margin: 0 }}>
-              {event.homeTeam} vs {event.awayTeam}
-            </p>
+
+      {/* Body — image left, content right (mirrors PolyCard) */}
+      <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1 }}>
+        {event.homeLogo
+          ? <img src={event.homeLogo} alt={event.homeTeam} style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 4, background: '#f8f8f8', padding: 2, flexShrink: 0 }} />
+          : <div style={{ width: 36, height: 36, borderRadius: 4, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#999', flexShrink: 0 }}>{event.homeTeam.split(' ').pop()?.slice(0,3).toUpperCase()}</div>
+        }
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, margin: '0 0 14px' }}>{event.homeTeam} vs {event.awayTeam}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em', color: '#16a34a' }}>{(homeProb * 100).toFixed(0)}%</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a' }}>{event.homeTeam.split(' ').pop()?.toUpperCase()}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em', color: '#dc2626', opacity: 0.75 }}>{(awayProb * 100).toFixed(0)}%</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626', opacity: 0.75 }}>{event.awayTeam.split(' ').pop()?.toUpperCase()}</span>
+            </div>
           </div>
-          <TeamLogo src={event.awayLogo} name={event.awayTeam} />
+          <div style={{ height: 6, background: '#f5f5f5', borderRadius: 3, overflow: 'hidden', display: 'flex' }}>
+            <div style={{ height: '100%', width: `${homeProb * 100}%`, background: '#16a34a', borderRadius: '3px 0 0 3px', transition: 'width 0.3s' }} />
+            <div style={{ height: '100%', flex: 1, background: '#dc2626', opacity: 0.4 }} />
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <button
-            onClick={() => addLeg({
-              marketId:      `${event.matchId}-home`,
-              marketLabel:   `${event.homeTeam} vs ${event.awayTeam}`,
-              outcome:       `${event.homeTeam} Win`,
-              price:         homeProb,
-              marketObjectId: event.suiObjectId || undefined,
-              outcomeIdx:    1,
-            })}
-            disabled={inHome || event.status === 'final'}
-            style={{ padding: '14px 8px', background: inHome ? '#00dc8215' : event.status === 'final' ? '#f5f5f5' : '#00dc82', color: inHome ? '#00dc82' : event.status === 'final' ? '#bbb' : '#000', border: inHome ? '1px solid #00dc8244' : 'none', cursor: (inHome || event.status === 'final') ? 'default' : 'pointer', fontWeight: 900, fontSize: 12, textAlign: 'center' }}
-          >
-            <div style={{ fontSize: 20, fontWeight: 900 }}>{event.homeOdds.toFixed(2)}×</div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>{inHome ? '✓ IN PARLAY' : event.homeTeam.split(' ').pop()?.toUpperCase()}</div>
-          </button>
-          <button
-            onClick={() => addLeg({
-              marketId:      `${event.matchId}-away`,
-              marketLabel:   `${event.homeTeam} vs ${event.awayTeam}`,
-              outcome:       `${event.awayTeam} Win`,
-              price:         awayProb,
-              marketObjectId: event.suiObjectId || undefined,
-              outcomeIdx:    2,
-            })}
-            disabled={inAway || event.status === 'final'}
-            style={{ padding: '14px 8px', background: 'transparent', color: inAway ? '#555' : event.status === 'final' ? '#bbb' : 'var(--black)', border: `1px solid ${inAway ? '#1a1a1a' : 'var(--border)'}`, cursor: (inAway || event.status === 'final') ? 'default' : 'pointer', fontWeight: 900, fontSize: 12, textAlign: 'center' }}
-          >
-            <div style={{ fontSize: 20, fontWeight: 900 }}>{event.awayOdds.toFixed(2)}×</div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>{inAway ? '✓ IN PARLAY' : event.awayTeam.split(' ').pop()?.toUpperCase()}</div>
-          </button>
-        </div>
-        <div style={{ marginTop: 10, height: 4, background: '#f5f5f5', borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
-          <div style={{ height: '100%', width: `${homeProb * 100}%`, background: '#00dc82', transition: 'width 0.3s' }} />
-          <div style={{ height: '100%', flex: 1, background: '#dc2626', opacity: 0.4 }} />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 10, color: '#888' }}>
-          <span>{(homeProb * 100).toFixed(0)}% {event.homeTeam.split(' ').pop()}</span>
-          <span>{(awayProb * 100).toFixed(0)}% {event.awayTeam.split(' ').pop()}</span>
-        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 9, color: '#bbb', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          {inParlay ? '✓ IN PARLAY' : 'TAP TO VIEW & ADD'}
+        </span>
+        <span style={{ fontSize: 11, color: '#ccc' }}>↗</span>
       </div>
     </div>
   );
@@ -236,8 +271,9 @@ export default function MarketsPage() {
   const [polymarkets, setPolymarkets] = useState<PolyMarket[]>([]);
   const [sportsLoading, setSportsLoading] = useState(true);
   const [polyLoading,   setPolyLoading]   = useState(true);
-  const [activeTab,   setActiveTab]   = useState<UnifiedTab>('all');
-  const [selected,    setSelected]    = useState<PolyMarket | null>(null);
+  const [activeTab,      setActiveTab]      = useState<UnifiedTab>('all');
+  const [selected,       setSelected]       = useState<PolyMarket | null>(null);
+  const [selectedSport,  setSelectedSport]  = useState<SportEvent | null>(null);
 
   const { legs } = useParlayStore();
   const suiPrice = useSuiUsdPrice();
@@ -259,7 +295,7 @@ export default function MarketsPage() {
   }, []);
 
   useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); };
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') { setSelected(null); setSelectedSport(null); } };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
   }, []);
@@ -300,7 +336,8 @@ export default function MarketsPage() {
 
   return (
     <div style={{ maxWidth: 1440, margin: '0 auto', borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
-      {selected && <MarketDetailModal market={selected} onClose={() => setSelected(null)} />}
+      {selected      && <MarketDetailModal  market={selected}      onClose={() => setSelected(null)} />}
+      {selectedSport && <SportDetailModal   event={selectedSport}  onClose={() => setSelectedSport(null)} />}
 
       {/* Hero */}
       <div className="page-grid" style={{ borderBottom: 'none' }}>
@@ -365,8 +402,8 @@ export default function MarketsPage() {
           <div style={{ padding: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 1, background: 'var(--border)' }}>
             {filteredItems.map(item =>
               item.kind === 'sport'
-                ? <SportCard key={item.event.matchId} event={item.event} />
-                : <PolyCard  key={item.market.id} market={item.market} onClick={() => setSelected(item.market)} />
+                ? <SportCard key={item.event.matchId}  event={item.event}   onClick={() => setSelectedSport(item.event)} />
+                : <PolyCard  key={item.market.id}       market={item.market} onClick={() => setSelected(item.market)} />
             )}
           </div>
         )}
