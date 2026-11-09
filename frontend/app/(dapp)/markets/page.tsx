@@ -63,15 +63,15 @@ function SportDetailModal({ event, onClose }: { event: SportEvent; onClose: () =
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button
               onClick={() => { addLeg({ marketId: `${event.matchId}-home`, marketLabel: `${event.homeTeam} vs ${event.awayTeam}`, outcome: `${event.homeTeam} Win`, price: homeProb, marketObjectId: event.suiObjectId, outcomeIdx: 1 }); onClose(); }}
-              disabled={inHome || event.status === 'final'}
-              style={{ width: '100%', padding: 16, background: inHome ? '#00dc8215' : '#00dc82', color: inHome ? '#00dc82' : '#000', border: inHome ? '1px solid #00dc8244' : 'none', cursor: (inHome || event.status === 'final') ? 'default' : 'pointer', fontWeight: 900, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+              disabled={inHome}
+              style={{ width: '100%', padding: 16, background: inHome ? '#00dc8215' : '#00dc82', color: inHome ? '#00dc82' : '#000', border: inHome ? '1px solid #00dc8244' : 'none', cursor: inHome ? 'default' : 'pointer', fontWeight: 900, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase' }}
             >
               {inHome ? `✓ ${event.homeTeam.toUpperCase()} IN PARLAY` : `+ ${event.homeTeam.toUpperCase()} WIN  ${(homeProb*100).toFixed(0)}%  →  ${event.homeOdds.toFixed(2)}×`}
             </button>
             <button
               onClick={() => { addLeg({ marketId: `${event.matchId}-away`, marketLabel: `${event.homeTeam} vs ${event.awayTeam}`, outcome: `${event.awayTeam} Win`, price: awayProb, marketObjectId: event.suiObjectId, outcomeIdx: 2 }); onClose(); }}
-              disabled={inAway || event.status === 'final'}
-              style={{ width: '100%', padding: 16, background: 'transparent', color: inAway ? '#555' : '#ccc', border: `1px solid ${inAway ? '#1a1a1a' : '#2a2a2a'}`, cursor: (inAway || event.status === 'final') ? 'default' : 'pointer', fontWeight: 900, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+              disabled={inAway}
+              style={{ width: '100%', padding: 16, background: 'transparent', color: inAway ? '#555' : '#ccc', border: `1px solid ${inAway ? '#1a1a1a' : '#2a2a2a'}`, cursor: inAway ? 'default' : 'pointer', fontWeight: 900, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase' }}
             >
               {inAway ? `✓ ${event.awayTeam.toUpperCase()} IN PARLAY` : `+ ${event.awayTeam.toUpperCase()} WIN  ${(awayProb*100).toFixed(0)}%  →  ${event.awayOdds.toFixed(2)}×`}
             </button>
